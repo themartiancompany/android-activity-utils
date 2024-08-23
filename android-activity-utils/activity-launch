@@ -1,0 +1,386 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+_share="${_bin}/../share"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+_root_requirements() {
+  _check_cmd \
+    "su"
+}
+
+# shellcheck disable=SC2034
+_global_variables() {
+  launch_date=""
+  target_app=""
+  target_activity=""
+  launch_mode=""
+  focus_length=""
+  focus_poll=""
+  display_dim=""
+  touch_disabled=""
+  color=""
+  quiet=""
+}
+
+_focus_check() {
+  local \
+    _current_activity \
+    _target_activity
+  _current_activity="$( \
+    activity-focused)"
+  _target_activity="${_app}/${_app}.${_activity}"
+  if [[ "${_current_activity}" != "${_target_activity}" ]]; then
+    _msg_info \
+      "Current activity: ${_current_activity}"
+    _msg_info \
+      "Target activity: ${_target_activity}"
+    _activity_launch_cmd \
+      "${_target_activity}"
+  fi
+} 
+
+_display_dim_check() {
+  local \
+    _current_brightness
+  _current_brightness="$( \
+    bbrightnessctl \
+      "${_bbrightnessctl_opts[@]}" \
+      -m \
+        root \
+      get || \
+      true)"
+  if \
+    [ 1 -le "${_current_brightness}" ] ; then
+    _msg_info \
+      "Current brightness: ${_current_brightness}"
+    bbrightnessctl \
+      -m \
+        root \
+      set \
+        0 || \
+      true
+  fi
+}
+
+_touch_disabled_check_in() {
+  local \
+    _touch_status
+  if [[ "${_touch_disabled}" == "y" ]]; then
+    _touch_status="$( \
+      touchctl \
+        status || \
+        true)"
+    if [[ "${_touch_status}" == "enabled" ]]; then
+      _msg_info \
+        "Disabling touch input"
+      touchctl \
+        "${_touchctl_opts[@]}" \
+        disable || \
+      true
+    fi || \
+      true
+  fi || \
+    true
+}
+
+_display_dim_check_in(){
+  if [[ "${_dim}" == "y" ]]; then
+    _previous_brightness="$( \
+      bbrightnessctl \
+        "${_bbrightnessctl_opts[@]}" \
+        -m \
+          root \
+        get || \
+        true)"
+  fi
+}
+
+_display_dim_check_out() {
+  if [[ "${_dim}" == "y" ]]; then
+    bbrightnessctl \
+      -m \
+        root \
+      set \
+        "${_previous_brightness}" || \
+      true
+  fi
+}
+
+_touch_disabled_check_out() {
+  local \
+    _touch_status
+  if \
+    [[ "${_touch_disabled}" == "y" ]]; then
+    _touch_status="$( \
+      touchctl \
+        status)"
+    if \
+      [[ "${_touch_status}" == "disabled" ]]; then
+      _msg_info \
+        "Re-enabling touch input"
+      touchctl \
+        "${_touchctl_opts[@]}" \
+        enable || \
+      true
+    fi || \
+      true
+  fi || \
+    true
+}
+
+_service() {
+  local \
+    _length="${1}" \
+    _poll="${2}" \
+    _dim="${3}" \
+    _touch_disabled="${4}" \
+    _time=0 \
+    _current_activity \
+    _previous_brightness
+  if [[ "quiet" != "y" ]]; then
+    _bbrightnessctl_opts+=(
+      -v
+    )
+    _touchctl_opts+=(
+      -v
+    )
+    _viewer_app_opts+=(
+      -v
+    )
+  fi
+  _touch_disabled_check_in
+  _display_dim_check_in
+  while \
+    (( "${_time}" < "${_length}" )); do
+    _focus_check
+    if [[ "${_dim}" == "y" ]]; then
+      _display_dim_check
+    fi
+    sleep \
+      "${_poll}"
+    _time="$(( \
+      _time + _poll ))"
+  done
+  _touch_disabled_check_out
+  _display_dim_check_out
+}
+
+_activity_launch_cmd() {
+  local \
+    _activity="${1}" \
+    _cmd=()
+  _cmd=(
+    am
+      start
+        -a 
+          android.intent.action.MAIN
+        -n 
+          "${_activity}"
+  )
+  su -c \
+    "${_cmd[@]}"
+}
+
+_activity_launch() {
+  local \
+    _app="${1}" \
+    _activity="${2}" \
+    _mode="${3}" \
+    _length="${4}" \
+    _poll="${5}" \
+    _dim="${6}" \
+    _touch_disabled="${7}"
+  if (( 0 < "${_length}" )); then
+    _service \
+      "${_length}" \
+      "${_poll}" \
+      "${_dim}" \
+      "${_touch_disabled}"
+  fi
+  _activity_launch_cmd \
+    "${_app}/.${_activity}"
+}
+
+_set_overrides() {
+  _set_override \
+    "launch" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "launch" \
+    "mode" \
+    "root"
+  _set_override \
+    "focus" \
+    "length" \
+    "0"
+  _set_override \
+    "focus" \
+    "poll" \
+    "30"
+  _set_override \
+    "display" \
+    "dim" \
+    "n"
+  _set_override \
+    "touch" \
+    "disabled" \
+    "n"
+  if [[ "${display_dim}" == "true" ]]; then
+    _check_cmd \
+      "bbrightnessctl" \
+      "bbrightnessctl"
+    _check_cmd \
+      "display-status"
+      "android-utils"
+  fi
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "              Launch date:   $(_get "launch" "date")"
+  _msg_info "              Launch mode:   $(_get "launch" "mode")"
+  _msg_info "                      App:   $(_get "target" "app")"
+  _msg_info "                 Activity:   $(_get "target" "activity")"
+  _msg_info "             Focus length:   $(_get "focus" "length")"
+  _msg_info "               Focus poll:   $(_get "focus" "poll")"
+  _msg_info "              Display dim:   $(_get "display" "dim")"
+  _msg_info "           Touch disabled:   $(_get "touch" "disabled")"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Launch an android activity
+
+Usage:
+  $(_get "app" "name")
+    [options]
+    <app>
+    <activity>
+  options:
+     -m <mode>            How to switch activity
+                          Default: $(_get "launch" "mode")
+     -L <length>          For how much time keep focus
+                          Default: $(_get "focus" "length")
+     -p <poll>            Time interval between focus checks
+                          Default: $(_get "focus" "poll")
+     -d                   Dim the display.
+                          Default: $(_get "display" "dim")
+     -t                   Disable the touchscreen.
+                          Default: $(_get "touch" "disabled")
+
+     -h                   This message.
+     -v                   Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_globals
+_global_variables
+# shellcheck disable=SC2004
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'm:L:p:dtcvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    m) override_launch_mode="${OPTARG}" ;;
+    L) override_focus_length="${OPTARG}" ;;
+    p) override_focus_poll="${OPTARG}" ;;
+    d) override_display_dim="y" ;;
+    t) override_touch_disabled="y" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+	 _usage \
+           0 ;;
+    *)
+    _msg_error \
+      "Invalid argument '${arg}'" \
+      0 && \
+    _set_overrides && \
+    _usage \
+      1
+    ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+(( $# <= 1 )) && \
+  _usage \
+    1
+_set \
+  "target" \
+  "app" \
+  "${1}"
+_set \
+  "target" \
+  "activity" \
+  "${2}"
+_set_overrides
+app_opts=(
+  "$(_get \
+       "target" \
+       "app")"
+  "$(_get \
+       "target" \
+       "activity")"
+  "$(_get \
+       "launch" \
+       "mode")"
+  "$(_get \
+       "focus" \
+       "length")"
+  "$(_get \
+       "focus" \
+       "poll")"
+  "$(_get \
+       "display" \
+       "dim")"
+  "$(_get \
+       "touch" \
+       "disabled")"
+)
+_show_config
+_activity_launch \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:

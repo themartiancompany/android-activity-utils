@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+#
+# SPDX-License-Identifier: AGPL-3.0
+
+# I don't remember why
+# I had this shebang
+# so let's have it just in case
+# until next test
+#!/data/data/com.termux/files/usr/bin/env bash
+
+_bin="$( \
+  dirname \
+    "$( \
+      command \
+        -v \
+	  "env")")"
+_lib="${_bin}/../lib"
+_share="${_bin}/../share"
+source \
+  "${_lib}/libcrash-bash/crash-bash"
+
+_root_requirements() {
+  _check_cmd \
+    "su"
+}
+
+# shellcheck disable=SC2034
+_global_variables() {
+  get_date=""
+  get_mode=""
+  color=""
+  quiet=""
+}
+
+_root_get() {
+  local \
+    _sdk
+  _sdk="$( \
+    sdk-version)"
+  if (( 32 < "${_sdk}" )); then
+    _cmd=(
+      "/system/bin/dumpsys"
+        "activity"
+        "activities"
+    )
+  elif (( "${_sdk}" < 28 )); then
+    _cmd=(
+      "/system/bin/dumpsys"
+        "window"
+        "windows"
+    )
+  else
+    _cmd=(
+      "/system/bin/dumpsys"
+        "window"
+        "windows"
+    )
+  fi
+  _activities="$( \
+    su \
+      -c \
+      "${_cmd[*]}")"
+  _activity="$( \
+    echo \
+      "${_activities}" | \
+      grep \
+        "mCurrentFocus" | \
+        awk \
+          '{print $3}' | \
+          awk \
+            -F \
+              '}' \
+            '{print $1}')"
+  echo \
+    "${_activity}"
+}
+
+_activity_focused() {
+  local \
+    _mode="${1}" \
+    _cmd=() \
+    _activities
+  "_${_mode}_get"
+}
+
+_auto_detect_mode() {
+  local \
+    _os
+  _os="$( \
+    uname \
+      -o)"
+  if [[ "${_os}" == "Android" ]]; then
+    _root_requirements
+    echo \
+      "root"
+  elif [[ "${_os}" == "GNU/Linux" ]]; then
+    _msg_error \
+      "not implemented. something with xdotool needs to be written"
+  fi
+}
+
+_set_overrides() {
+  _set_override \
+    "get" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "get" \
+    "mode" \
+    "$(_auto_detect_mode)"
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "     Got activity at date:   $(_get "get" "date")"
+  _msg_info "                 Get mode:   $(_get "get" "mode")"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Get currently focused Android activity
+
+Usage:
+  $(_get "app" "name")
+    [options]
+  options:
+     -m <method>          Method to obtain activity name.
+                          Default: $(_get "get" "mode")
+     -h                   This message.
+     -v                   Enable verbose output
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_globals
+_global_variables
+# shellcheck disable=SC2004
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'm:a:cvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    m) override_get_mode="${OPTARG}" ;;
+    a) override_sdk_version="${OPTARG}" ;;
+    c) override_color="y" ;;
+    v) override_quiet="n" ;;
+    h|?) _set_overrides && \
+	 _usage \
+           0 ;;
+    *)
+    _msg_error \
+      "Invalid argument '${arg}'" \
+      0 && \
+    _set_overrides && \
+    _usage \
+      1
+    ;;
+  esac
+done
+shift \
+  $(( \
+    OPTIND - 1 \
+  ))
+_set_overrides
+app_opts=(
+  "$(_get \
+       "get" \
+       "mode")"
+)
+_show_config
+_activity_focused \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
