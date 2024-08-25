@@ -50,26 +50,7 @@ _focus_check() {
 } 
 
 _display_dim_check() {
-  local \
-    _current_brightness
-  _current_brightness="$( \
-    bbrightnessctl \
-      "${_bbrightnessctl_opts[@]}" \
-      -m \
-        root \
-      get || \
-      true)"
-  if \
-    [ 1 -le "${_current_brightness}" ] ; then
-    _msg_info \
-      "Current brightness: ${_current_brightness}"
-    bbrightnessctl \
-      -m \
-        root \
-      set \
-        0 || \
-      true
-  fi
+  android-display-dim
 }
 
 _touch_disabled_check_in() {
@@ -145,7 +126,6 @@ _service() {
     _dim="${3}" \
     _touch_disabled="${4}" \
     _time=0 \
-    _current_activity \
     _previous_brightness
   if [[ "quiet" != "y" ]]; then
     _bbrightnessctl_opts+=(
@@ -241,8 +221,8 @@ _set_overrides() {
       "bbrightnessctl" \
       "bbrightnessctl"
     _check_cmd \
-      "display-status"
-      "android-utils"
+      "android-display-dim"
+      "android-display-dim"
   fi
   if [[ -v override_color ]]; then
     color="${override_color}"
