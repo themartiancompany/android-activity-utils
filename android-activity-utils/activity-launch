@@ -18,7 +18,7 @@ _root_requirements() {
     "activity-focused" \
     "android-activity-utils"
   _check_cmd \
-    "su" \
+    "sudo" \
     "tsu"
 }
 
@@ -171,7 +171,7 @@ _activity_launch_cmd() {
         -n 
           "${_activity}"
   )
-  su -c \
+  sudo \
     "${_cmd[@]}"
 }
 
