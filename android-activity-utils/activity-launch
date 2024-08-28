@@ -18,6 +18,9 @@ _root_requirements() {
     "activity-focused" \
     "android-activity-utils"
   _check_cmd \
+    "lockscreen-unlock" \
+    "android-lockscreen-utils"
+  _check_cmd \
     "sudo" \
     "tsu"
 }
