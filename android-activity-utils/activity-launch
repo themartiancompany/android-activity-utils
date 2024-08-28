@@ -181,13 +181,9 @@ _activity_launch_cmd() {
         -n \
           "${_activity}" || \
    true
-  sudo \
-    am \
-      start \
-        -a \
-          android.intent.action.MAIN \
-        -n \
-          "${_activity}" || \
+  su \
+    -c \
+    "am start -a android.intent.action.MAIN -n ${_activity}" || \
   true
 
 }
