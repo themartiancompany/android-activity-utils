@@ -171,16 +171,25 @@ _activity_launch_cmd() {
   local \
     _activity="${1}" \
     _cmd=()
-  _cmd=(
-    am
-      start
-        -a 
-          android.intent.action.MAIN
-        -n 
-          "${_activity}"
-  )
+  _msg_info \
+    "launching ${_activity}"
   sudo \
-    "${_cmd[@]}"
+    am \
+      start \
+        -a \
+          android.intent.action.MAIN \
+        -n \
+          "${_activity}" || \
+   true
+  sudo \
+    am \
+      start \
+        -a \
+          android.intent.action.MAIN \
+        -n \
+          "${_activity}" || \
+  true
+
 }
 
 _activity_launch() {
@@ -202,7 +211,8 @@ _activity_launch() {
     lockscreen-unlock
     if [[ "${_dim}" == "y" ]]; then
       android-display-dim
-    fi
+    fi || \
+      true
     _activity_launch_cmd \
       "${_app}/.${_activity}"
   fi
