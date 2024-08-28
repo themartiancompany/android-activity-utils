@@ -90,6 +90,7 @@ _display_dim_check_in(){
           root \
         get || \
         true)"
+    android-display-dim
   fi
 }
 
@@ -196,6 +197,9 @@ _activity_launch() {
       "${_touch_disabled}"
   else
     lockscreen-unlock
+    if [[ "${_dim}" == "y" ]]; then
+      android-display-dim
+    fi
     _activity_launch_cmd \
       "${_app}/.${_activity}"
   fi
