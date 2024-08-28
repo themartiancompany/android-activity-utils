@@ -142,6 +142,7 @@ _service() {
       -v
     )
   fi
+  lockscreen-unlock
   _touch_disabled_check_in
   _display_dim_check_in
   while \
