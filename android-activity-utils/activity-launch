@@ -15,7 +15,11 @@ source \
 
 _root_requirements() {
   _check_cmd \
-    "su"
+    "activity-focused" \
+    "android-activity-utils"
+  _check_cmd \
+    "su" \
+    "tsu"
 }
 
 # shellcheck disable=SC2034
