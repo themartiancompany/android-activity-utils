@@ -239,12 +239,10 @@ _set_overrides() {
     "touch" \
     "disabled" \
     "n"
-  if [[ "${display_dim}" == "true" ]]; then
+  if [[ "${display_dim}" == "y" ]]; then
     _check_cmd \
-      "bbrightnessctl" \
       "bbrightnessctl"
     _check_cmd \
-      "android-display-dim"
       "android-display-dim"
   fi
   if [[ -v override_color ]]; then
