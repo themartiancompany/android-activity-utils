@@ -63,6 +63,11 @@ _display_dim_check() {
   android-display-dim
 }
 
+_focus_check_in() {
+  _previous_activity="$( \
+    activity-focused)"
+}
+
 _touch_disabled_check_in() {
   local \
     _touch_status
@@ -130,6 +135,13 @@ _touch_disabled_check_out() {
     true
 }
 
+_focus_check_out() {
+  _msg_info \
+    "previous activity '${_previous_activity}'"
+   _activity_launch_cmd \
+    "${_previous_activity}"
+}
+
 _service() {
   local \
     _length="${1}" \
@@ -137,7 +149,8 @@ _service() {
     _dim="${3}" \
     _touch_disabled="${4}" \
     _time=0 \
-    _previous_brightness
+    _previous_brightness \
+    _previous_activity
   if [[ "quiet" != "y" ]]; then
     _bbrightnessctl_opts+=(
       -v
@@ -152,6 +165,7 @@ _service() {
   lockscreen-unlock
   _touch_disabled_check_in
   _display_dim_check_in
+  _focus_check_in
   while \
     (( "${_time}" < "${_length}" )); do
     _focus_check
@@ -163,6 +177,7 @@ _service() {
     _time="$(( \
       _time + _poll ))"
   done
+  _focus_check_out
   _touch_disabled_check_out
   _display_dim_check_out
 }
