@@ -1,13 +1,36 @@
 #!/usr/bin/env bash
-#
+
 # SPDX-License-Identifier: AGPL-3.0
 
-_bin="$( \
+#    -----------------------------------------------------
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
+#
+#    All rights reserved
+#    -----------------------------------------------------
+#
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
+#
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
+
+_bin="$(
   dirname \
-    "$( \
-      command \
-        -v \
-	  "env")")"
+    "$(command \
+         -v \
+	 "env")")"
 _lib="${_bin}/../lib"
 _share="${_bin}/../share"
 source \
@@ -45,15 +68,22 @@ _global_variables() {
 _focus_check() {
   local \
     _current_activity \
-    _target_activity
+    _target_activity \
+    _msg=()
   _current_activity="$( \
     activity-focused)"
   _target_activity="${_app}/${_app}.${_activity}"
   if [[ "${_current_activity}" != "${_target_activity}" ]]; then
+    _msg=(
+      "Current activity: ${_current_activity}."
+    )
     _msg_info \
-      "Current activity: ${_current_activity}"
+      "${_msg[*]}"
+    _msg=(
+      "Target activity: ${_target_activity}."
+    )
     _msg_info \
-      "Target activity: ${_target_activity}"
+      "${_msg[*]}"
     _activity_launch_cmd \
       "${_target_activity}"
   fi
@@ -94,7 +124,14 @@ _touch_disabled_check_in() {
 }
 
 _display_dim_check_in(){
+  local \
+    _msg=()
   if [[ "${_dim}" == "y" ]]; then
+    _msg=(
+     "De-dimming screen."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _previous_brightness="$( \
       bbrightnessctl \
         "${_bbrightnessctl_opts[@]}" \
@@ -107,7 +144,14 @@ _display_dim_check_in(){
 }
 
 _display_dim_check_out() {
+  local \
+    _msg=()
   if [[ "${_dim}" == "y" ]]; then
+    _msg=(
+     "De-dimming screen."
+    )
+    _msg_info \
+      "${_msg[*]}"
     bbrightnessctl \
       -m \
         root \
@@ -119,6 +163,7 @@ _display_dim_check_out() {
 
 _touch_disabled_check_out() {
   local \
+    _msg=()
     _touch_status
   if \
     [[ "${_touch_disabled}" == "y" ]]; then
@@ -127,8 +172,11 @@ _touch_disabled_check_out() {
         status)"
     if \
       [[ "${_touch_status}" == "disabled" ]]; then
+      _msg=(
+        "Re-enabling touch input."
+      )
       _msg_info \
-        "Re-enabling touch input"
+        "${_msg[*]}"
       touchctl \
         "${_touchctl_opts[@]}" \
         enable || \
@@ -140,8 +188,13 @@ _touch_disabled_check_out() {
 }
 
 _focus_check_out() {
+  local \
+    _msg=()
+  _msg=(
+    "Previous activity '${_previous_activity}'."
+  )
   _msg_info \
-    "previous activity '${_previous_activity}'"
+    "${_msg[*]}"
    _activity_launch_cmd \
     "${_previous_activity}"
 }
@@ -155,7 +208,7 @@ _service() {
     _time=0 \
     _previous_brightness \
     _previous_activity
-  if [[ "quiet" != "y" ]]; then
+  if [[ "quiet" == "n" ]]; then
     _bbrightnessctl_opts+=(
       -v
     )
@@ -189,14 +242,18 @@ _service() {
 _activity_launch_cmd() {
   local \
     _activity="${1}" \
-    _cmd=()
+    _cmd=() \
+    _msg=()
+  _msg=(
+    "Launching ${_activity}."
+  )
   _msg_info \
-    "launching ${_activity}"
+    "${_msg[*]}"
   sudo \
     am \
       start \
         -a \
-          android.intent.action.MAIN \
+          "android.intent.action.MAIN" \
         -n \
           "${_activity}" || \
    true
@@ -301,27 +358,28 @@ _usage() {
       _usage_text << \
         ENDUSAGETEXT || true
 
-Launch an android activity
+Launches Android activities.
 
 Usage:
-  $(_get "app" "name")
+  ${app_name}
     [options]
     <app>
     <activity>
   options:
      -m <mode>            How to switch activity
-                          Default: $(_get "launch" "mode")
+                          Default: ${launch_mode}
      -L <length>          For how much time keep focus
-                          Default: $(_get "focus" "length")
+                          Default: ${focus_length}
      -p <poll>            Time interval between focus checks
-                          Default: $(_get "focus" "poll")
+                          Default: ${focus_poll}
      -d                   Dim the display.
-                          Default: $(_get "display" "dim")
+                          Default: ${display_dim}
      -t                   Disable the touchscreen.
-                          Default: $(_get "touch" "disabled")
+                          Default: ${touch_disabled}
 
      -h                   This message.
      -v                   Enable verbose output
+
 ENDUSAGETEXT
   _printf \
     '%s\n' \
@@ -340,64 +398,55 @@ while \
     arg; do
   case \
     "${arg}" in
-    m) override_launch_mode="${OPTARG}" ;;
-    L) override_focus_length="${OPTARG}" ;;
-    p) override_focus_poll="${OPTARG}" ;;
-    d) override_display_dim="y" ;;
-    t) override_touch_disabled="y" ;;
-    c) override_color="y" ;;
-    v) override_quiet="n" ;;
-    h|?) _set_overrides && \
-	 _usage \
-           0 ;;
+    m)
+      override_launch_mode="${OPTARG}" ;;
+    L)
+      override_focus_length="${OPTARG}" ;;
+    p)
+      override_focus_poll="${OPTARG}" ;;
+    d)
+      override_display_dim="y" ;;
+    t)
+      override_touch_disabled="y" ;;
+    c)
+      override_color="y" ;;
+    v)
+      override_quiet="n" ;;
+    h|?)
+      _set_overrides
+      _usage \
+        0 ;;
     *)
-    _msg_error \
-      "Invalid argument '${arg}'" \
-      0 && \
-    _set_overrides && \
-    _usage \
-      1
-    ;;
+      _msg=(
+        "Invalid argument '${arg}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      _set_overrides
+      _usage \
+        1 ;;
   esac
 done
 shift \
-  $(( \
+  $((
     OPTIND - 1 \
   ))
-(( $# <= 1 )) && \
+if (( $# <= 1 )); then
   _usage \
     1
-_set \
-  "target" \
-  "app" \
-  "${1}"
-_set \
-  "target" \
-  "activity" \
-  "${2}"
+fi
+target_app="${1}"
+target_activity="${2}"
 _set_overrides
 app_opts=(
-  "$(_get \
-       "target" \
-       "app")"
-  "$(_get \
-       "target" \
-       "activity")"
-  "$(_get \
-       "launch" \
-       "mode")"
-  "$(_get \
-       "focus" \
-       "length")"
-  "$(_get \
-       "focus" \
-       "poll")"
-  "$(_get \
-       "display" \
-       "dim")"
-  "$(_get \
-       "touch" \
-       "disabled")"
+  "${target_app}"
+  "${target_activity}"
+  "${launch_mode}"
+  "${focus_length}"
+  "${focus_poll}"
+  "${display_dim}"
+  "${touch_disabled}"
 )
 _show_config
 _activity_launch \
