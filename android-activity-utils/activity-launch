@@ -70,15 +70,19 @@ _focus_check_in() {
 
 _touch_disabled_check_in() {
   local \
-    _touch_status
+    _touch_status \
+    _msg=()
   if [[ "${_touch_disabled}" == "y" ]]; then
     _touch_status="$( \
       touchctl \
         status || \
         true)"
     if [[ "${_touch_status}" == "enabled" ]]; then
+      _msg=(
+        "Disabling touch input."
+      )
       _msg_info \
-        "Disabling touch input"
+        "${_msg[*]}"
       touchctl \
         "${_touchctl_opts[@]}" \
         disable || \
