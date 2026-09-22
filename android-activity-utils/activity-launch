@@ -234,6 +234,16 @@ _activity_launch() {
 }
 
 _set_overrides() {
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
   _set_override \
     "launch" \
     "date" \
@@ -264,29 +274,19 @@ _set_overrides() {
     _check_cmd \
       "android-display-dim"
   fi
-  if [[ -v override_color ]]; then
-    color="${override_color}"
-  elif [[ -z "${color}" ]]; then
-    color="n"
-  fi
-  if [[ -v override_quiet ]]; then
-    quiet="${override_quiet}"
-  elif [[ -z "${quiet}" ]]; then
-    quiet="y"
-  fi
 }
 
 # Shows configuration options.
 _show_config() {
   _msg_info "${app_name} configuration"
-  _msg_info "              Launch date:   $(_get "launch" "date")"
-  _msg_info "              Launch mode:   $(_get "launch" "mode")"
-  _msg_info "                      App:   $(_get "target" "app")"
-  _msg_info "                 Activity:   $(_get "target" "activity")"
-  _msg_info "             Focus length:   $(_get "focus" "length")"
-  _msg_info "               Focus poll:   $(_get "focus" "poll")"
-  _msg_info "              Display dim:   $(_get "display" "dim")"
-  _msg_info "           Touch disabled:   $(_get "touch" "disabled")"
+  _msg_info "              Launch date:   ${launch_date}"
+  _msg_info "              Launch mode:   ${launch_mode}"
+  _msg_info "                      App:   ${target_app}"
+  _msg_info "                 Activity:   ${target_activity}"
+  _msg_info "             Focus length:   ${focus_length}"
+  _msg_info "               Focus poll:   ${focus_poll}"
+  _msg_info "              Display dim:   ${display_dim}"
+  _msg_info "           Touch disabled:   ${touch_disabled}"
 }
 
 # Show help usage, with an exit status.

@@ -1,0 +1,3 @@
+[submodule "bbrightnessctl"]
+	path = bbrightnessctl
+	url = https://github.com/themartiancompany/bbrightnessctl
