@@ -165,6 +165,7 @@ Usage:
   options:
 
      -m <method>          Method to obtain activity name.
+                          It can be 'root'.
                           Default: ${get_mode}
 
      -h                   This message.
