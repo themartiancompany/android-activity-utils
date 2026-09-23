@@ -32,7 +32,26 @@ BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 DOC_FILES=$(wildcard *.rst)
 SCRIPT_FILES=$(wildcard android-activity-utils/*)
 
-all:
+all: build-man
+
+build-man:
+
+	git \
+	  submodule \
+	    update \
+	    --init \
+	      "man" || \
+	true
+	mkdir \
+	  -p \
+	  "build/man"
+	cd \
+	  "man"; \
+	make \
+	  build-man
+	cp \
+	  "man/build/"* \
+	  "build/man"
 
 check: shellcheck
 
@@ -47,6 +66,8 @@ install: install-scripts install-doc install-man
 
 install-man:
 
+	make \
+	  build-man
 	cd \
 	  "man"; \
 	  make \
