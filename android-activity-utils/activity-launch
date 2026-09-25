@@ -56,6 +56,7 @@ _global_variables() {
   launch_date=""
   target_app=""
   target_activity=""
+  transition_type=""
   launch_mode=""
   focus_length=""
   focus_poll=""
@@ -272,7 +273,8 @@ _activity_launch() {
     _length="${4}" \
     _poll="${5}" \
     _dim="${6}" \
-    _touch_disabled="${7}"
+    _transition_type="${7}" \
+    _touch_disabled="${8}"
   if (( 0 < "${_length}" )); then
     _service \
       "${_length}" \
@@ -325,6 +327,10 @@ _set_overrides() {
     "touch" \
     "disabled" \
     "n"
+  _set_override \
+    "transition" \
+    "type" \
+    "none"
   if [[ "${display_dim}" == "y" ]]; then
     _check_cmd \
       "bbrightnessctl"
@@ -344,6 +350,7 @@ _show_config() {
   _msg_info "               Focus poll:   ${focus_poll}"
   _msg_info "              Display dim:   ${display_dim}"
   _msg_info "           Touch disabled:   ${touch_disabled}"
+  _msg_info "          Transition type:   ${transition_type}"
 }
 
 # Show help usage, with an exit status.
@@ -365,20 +372,25 @@ Usage:
     [options]
     <app>
     <activity>
-  options:
-     -m <mode>            How to switch activity
-                          Default: ${launch_mode}
-     -L <length>          For how much time keep focus
-                          Default: ${focus_length}
-     -p <poll>            Time interval between focus checks
-                          Default: ${focus_poll}
-     -d                   Dim the display.
-                          Default: ${display_dim}
-     -t                   Disable the touchscreen.
-                          Default: ${touch_disabled}
 
-     -h                   This message.
-     -v                   Enable verbose output
+  options:
+     -m <mode>               How to switch activity
+                             Default: ${launch_mode}
+     -L <length>             For how much time keep focus
+                             Default: ${focus_length}
+     -p <poll>               Time interval between focus checks
+                             Default: ${focus_poll}
+     -d                      Dim the display.
+                             Default: ${display_dim}
+     -t                      Disable the touchscreen.
+                             Default: ${touch_disabled}
+     -T <transition-type>    Transition to show during application
+                             switch and launch.
+                             It can be 'dim' or 'none'.
+                             Default: ${transition_type}
+
+     -h                      This message.
+     -v                      Enable verbose output
 
 ENDUSAGETEXT
   _printf \
@@ -394,7 +406,7 @@ _global_variables
 # shellcheck disable=SC2034
 while \
   getopts \
-    'm:L:p:dtcvh?' \
+    'm:L:p:dtT:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -408,6 +420,8 @@ while \
       override_display_dim="y" ;;
     t)
       override_touch_disabled="y" ;;
+    T)
+      override_transition_type="${OPTARG}" ;;
     c)
       override_color="y" ;;
     v)
@@ -446,6 +460,7 @@ app_opts=(
   "${focus_length}"
   "${focus_poll}"
   "${display_dim}"
+  "${transition_type}"
   "${touch_disabled}"
 )
 _show_config
