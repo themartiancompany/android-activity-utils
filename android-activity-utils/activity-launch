@@ -200,16 +200,7 @@ _focus_check_out() {
     "${_previous_activity}"
 }
 
-_service() {
-  local \
-    _length="${1}" \
-    _poll="${2}" \
-    _dim="${3}" \
-    _transition_type="${4}" \
-    _touch_disabled="${5}" \
-    _time=0 \
-    _previous_brightness \
-    _previous_activity
+_service_brightness_init() {
   if [[ "${_transition_type}" == "dim" ||
         "${_dim}" == "y" ]]; then
     _previous_brightness="$( \
@@ -219,18 +210,43 @@ _service() {
           root \
         get || \
         true)"
+    if [[ "quiet" == "n" ]]; then
+      _bbrightnessctl_opts+=(
+        -v
+      )
+    fi
   fi
+}
+
+_service_touch_init() {
   if [[ "quiet" == "n" ]]; then
-    _bbrightnessctl_opts+=(
-      -v
-    )
     _touchctl_opts+=(
       -v
     )
-    _viewer_app_opts+=(
-      -v
-    )
   fi
+}
+
+_transition_check_in() {
+  if [[ "${_transition_type}" == "dim" ]]; then
+    android-di
+  fi
+}
+
+_service() {
+  local \
+    _length="${1}" \
+    _poll="${2}" \
+    _dim="${3}" \
+    _transition_type="${4}" \
+    _touch_disabled="${5}" \
+    _time=0 \
+    _bbrightnessctl_opts=() \
+    _touchctl_opts=() \
+    _previous_brightness \
+    _previous_activity
+  _service_brightness_init
+  _service_touch_init
+  _transition_check_in
   lockscreen-unlock
   _touch_disabled_check_in
   _display_dim_check_in
