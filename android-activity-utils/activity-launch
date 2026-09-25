@@ -129,7 +129,7 @@ _display_dim_check_in(){
     _msg=()
   if [[ "${_dim}" == "y" ]]; then
     _msg=(
-     "De-dimming screen."
+     "Dimming screen."
     )
     _msg_info \
       "${_msg[*]}"
@@ -205,10 +205,21 @@ _service() {
     _length="${1}" \
     _poll="${2}" \
     _dim="${3}" \
-    _touch_disabled="${4}" \
+    _transition_type="${4}" \
+    _touch_disabled="${5}" \
     _time=0 \
     _previous_brightness \
     _previous_activity
+  if [[ "${_transition_type}" == "dim" ||
+        "${_dim}" == "y" ]]; then
+    _previous_brightness="$( \
+      bbrightnessctl \
+        "${_bbrightnessctl_opts[@]}" \
+        -m \
+          root \
+        get || \
+        true)"
+  fi
   if [[ "quiet" == "n" ]]; then
     _bbrightnessctl_opts+=(
       -v
@@ -280,6 +291,7 @@ _activity_launch() {
       "${_length}" \
       "${_poll}" \
       "${_dim}" \
+      "${_transition_type}"
       "${_touch_disabled}"
   else
     lockscreen-unlock
@@ -324,13 +336,13 @@ _set_overrides() {
     "dim" \
     "n"
   _set_override \
-    "touch" \
-    "disabled" \
-    "n"
-  _set_override \
     "transition" \
     "type" \
     "none"
+  _set_override \
+    "touch" \
+    "disabled" \
+    "n"
   if [[ "${display_dim}" == "y" ]]; then
     _check_cmd \
       "bbrightnessctl"
@@ -349,8 +361,8 @@ _show_config() {
   _msg_info "             Focus length:   ${focus_length}"
   _msg_info "               Focus poll:   ${focus_poll}"
   _msg_info "              Display dim:   ${display_dim}"
-  _msg_info "           Touch disabled:   ${touch_disabled}"
   _msg_info "          Transition type:   ${transition_type}"
+  _msg_info "           Touch disabled:   ${touch_disabled}"
 }
 
 # Show help usage, with an exit status.
