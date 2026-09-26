@@ -320,8 +320,8 @@ _activity_launch() {
     _transition_type="${7}" \
     _transition_duration="${8}" \
     _touch_disabled="${9}"
-  if (( 0 < "${_length}" ||
-        "${_transition_type}" == "dim" )); then
+  if (( 0 < "${_length}" )) ||
+     [[ "${_transition_type}" == "dim" ]]; then
     _service \
       "${_length}" \
       "${_poll}" \
