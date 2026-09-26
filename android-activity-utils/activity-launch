@@ -518,7 +518,25 @@ shift \
   $((
     OPTIND - 1 \
   ))
-if (( $# <= 1 )); then
+if (( $# < 1 )); then
+  _msg=(
+    "No application nor activity"
+    "given in input."
+  )
+  _msg_error \
+    "${_msg[*]}" \
+    1
+  _usage \
+    1
+fi
+if (( $# < 2 )); then
+  _msg=(
+    "No activity"
+    "given in input."
+  )
+  _msg_error \
+    "${_msg[*]}" \
+    0
   _usage \
     1
 fi
