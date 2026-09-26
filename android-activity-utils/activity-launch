@@ -57,6 +57,7 @@ _global_variables() {
   target_app=""
   target_activity=""
   transition_type=""
+  transition_duration=""
   launch_mode=""
   focus_length=""
   focus_poll=""
@@ -133,13 +134,6 @@ _display_dim_check_in(){
     )
     _msg_info \
       "${_msg[*]}"
-    _previous_brightness="$( \
-      bbrightnessctl \
-        "${_bbrightnessctl_opts[@]}" \
-        -m \
-          root \
-        get || \
-        true)"
     android-display-dim
   fi
 }
@@ -226,9 +220,28 @@ _service_touch_init() {
   fi
 }
 
-_transition_check_in() {
+_transition() {
+  local \
+    _type="${1}" \
+    _brightness_final
   if [[ "${_transition_type}" == "dim" ]]; then
-    android-di
+    android-display-dim
+  fi
+  if [[ "${_dim}" == "n" ]]; then
+    sleep \
+      "${_transition_duration}"
+    _brightness_final="${_previous_brightness}"
+    if [[ "${_type}" == "in" ]]; then
+      if [[ "${_previous_brightness}" < 100 ]]; then
+        _brightness_final="500"
+      fi
+    fi
+    bbrightnessctl \
+      -m \
+        root \
+      set \
+        "${_brightness_final}" || \
+      true
   fi
 }
 
@@ -238,7 +251,8 @@ _service() {
     _poll="${2}" \
     _dim="${3}" \
     _transition_type="${4}" \
-    _touch_disabled="${5}" \
+    _transition_duration="${5}" \
+    _touch_disabled="${6}" \
     _time=0 \
     _bbrightnessctl_opts=() \
     _touchctl_opts=() \
@@ -246,9 +260,10 @@ _service() {
     _previous_activity
   _service_brightness_init
   _service_touch_init
-  _transition_check_in
   lockscreen-unlock
-  _touch_disabled_check_in
+  ( _touch_disabled_check_in &
+    _transition \
+      "in")
   _display_dim_check_in
   _focus_check_in
   while \
@@ -263,7 +278,9 @@ _service() {
       _time + _poll ))"
   done
   _focus_check_out
-  _touch_disabled_check_out
+  ( _touch_disabled_check_out &
+    _transition \
+      "out" )
   _display_dim_check_out
 }
 
@@ -301,17 +318,21 @@ _activity_launch() {
     _poll="${5}" \
     _dim="${6}" \
     _transition_type="${7}" \
-    _touch_disabled="${8}"
-  if (( 0 < "${_length}" )); then
+    _transition_duration="${8}" \
+    _touch_disabled="${9}"
+  if (( 0 < "${_length}" ||
+        "${_transition_type}" == "dim" )); then
     _service \
       "${_length}" \
       "${_poll}" \
       "${_dim}" \
-      "${_transition_type}"
+      "${_transition_type}" \
+      "${_transition_duration}" \
       "${_touch_disabled}"
   else
     lockscreen-unlock
-    if [[ "${_dim}" == "y" ]]; then
+    if [[ "${_dim}" == "y" || \
+          "${_transition_type}" == "dim" ]]; then
       android-display-dim
     fi || \
       true
@@ -356,6 +377,10 @@ _set_overrides() {
     "type" \
     "none"
   _set_override \
+    "transition" \
+    "duration" \
+    "3"
+  _set_override \
     "touch" \
     "disabled" \
     "n"
@@ -378,6 +403,7 @@ _show_config() {
   _msg_info "               Focus poll:   ${focus_poll}"
   _msg_info "              Display dim:   ${display_dim}"
   _msg_info "          Transition type:   ${transition_type}"
+  _msg_info "      Transition duration:   ${transition_duration}"
   _msg_info "           Touch disabled:   ${touch_disabled}"
 }
 
@@ -396,29 +422,47 @@ _usage() {
 Launches Android activities.
 
 Usage:
+
   ${app_name}
     [options]
     <app>
     <activity>
 
   options:
-     -m <mode>               How to switch activity
-                             Default: ${launch_mode}
-     -L <length>             For how much time keep focus
-                             Default: ${focus_length}
-     -p <poll>               Time interval between focus checks
-                             Default: ${focus_poll}
-     -d                      Dim the display.
-                             Default: ${display_dim}
-     -t                      Disable the touchscreen.
-                             Default: ${touch_disabled}
-     -T <transition-type>    Transition to show during application
-                             switch and launch.
-                             It can be 'dim' or 'none'.
-                             Default: ${transition_type}
 
-     -h                      This message.
-     -v                      Enable verbose output
+     -m <mode>                   Method to use to switch activity.
+                                 It can be:
+                                 - root.
+                                 Default: ${launch_mode}
+
+     -L <length>                 For how much time in seconds to
+                                 keep focus on the lauched activity.
+                                 Default: ${focus_length}
+
+     -p <poll>                   Time interval between current focus
+                                 checks.
+                                 Default: ${focus_poll}
+
+     -d                          Whether to dim the display while
+                                 launched activity is in focus.
+                                 Default: ${display_dim}
+
+     -t                          Whether to disable touchscreen
+                                 while launched application is in focus.
+                                 Default: ${touch_disabled}
+
+     -T <transition-type>        Transition to show during application
+                                 switch or launch.
+                                 It can be 'dim' or 'none'.
+                                 Default: ${transition_type}
+
+     -D <transition-duration>    Transition to show during application
+                                 switch or launch.
+                                 It can be 'dim' or 'none'.
+                                 Default: ${transition_type}
+
+     -h                          This message.
+     -v                          Enable verbose output
 
 ENDUSAGETEXT
   _printf \
@@ -489,6 +533,7 @@ app_opts=(
   "${focus_poll}"
   "${display_dim}"
   "${transition_type}"
+  "${transition_duration}"
   "${touch_disabled}"
 )
 _show_config
