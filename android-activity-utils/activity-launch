@@ -48,7 +48,7 @@ _root_requirements() {
     "android-lockscreen-utils"
   _check_cmd \
     "sudo" \
-    "tsu"
+    "sudo"
 }
 
 # shellcheck disable=SC2034
@@ -72,7 +72,7 @@ _focus_check() {
     _current_activity \
     _target_activity \
     _msg=()
-  _current_activity="$( \
+  _current_activity="$(
     activity-focused)"
   _target_activity="${_app}/${_app}.${_activity}"
   if [[ "${_current_activity}" != "${_target_activity}" ]]; then
@@ -96,7 +96,7 @@ _display_dim_check() {
 }
 
 _focus_check_in() {
-  _previous_activity="$( \
+  _previous_activity="$(
     activity-focused)"
 }
 
@@ -105,7 +105,7 @@ _touch_disabled_check_in() {
     _touch_status \
     _msg=()
   if [[ "${_touch_disabled}" == "y" ]]; then
-    _touch_status="$( \
+    _touch_status="$(
       touchctl \
         status || \
         true)"
@@ -162,7 +162,7 @@ _touch_disabled_check_out() {
     _touch_status
   if \
     [[ "${_touch_disabled}" == "y" ]]; then
-    _touch_status="$( \
+    _touch_status="$(
       touchctl \
         status)"
     if \
@@ -197,7 +197,7 @@ _focus_check_out() {
 _service_brightness_init() {
   if [[ "${_transition_type}" == "dim" ||
         "${_dim}" == "y" ]]; then
-    _previous_brightness="$( \
+    _previous_brightness="$(
       bbrightnessctl \
         "${_bbrightnessctl_opts[@]}" \
         -m \
