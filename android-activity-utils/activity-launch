@@ -319,7 +319,8 @@ _activity_launch() {
     _dim="${6}" \
     _transition_type="${7}" \
     _transition_duration="${8}" \
-    _touch_disabled="${9}"
+    _touch_disabled="${9}" \
+    _target_activity
   if (( 0 < "${_length}" )) ||
      [[ "${_transition_type}" == "dim" ]]; then
     _service \
@@ -336,8 +337,13 @@ _activity_launch() {
       android-display-dim
     fi || \
       true
+    if [[ " ${_activity} " != " "*"."*" " ]]; then
+      _target_activity="${_app}/.${_activity}"
+    else
+      _target_activity="${_app}/${_activity}"
+    fi
     _activity_launch_cmd \
-      "${_app}/.${_activity}"
+      "${_target_activity}"
   fi
 }
 
