@@ -223,13 +223,14 @@ _service_touch_init() {
 _transition() {
   local \
     _type="${1}" \
+    _duration="${2}" \
     _brightness_final
   if [[ "${_transition_type}" == "dim" ]]; then
     android-display-dim
   fi
   if [[ "${_dim}" == "n" ]]; then
     sleep \
-      "${_transition_duration}"
+      "${_duration}"
     _brightness_final="${_previous_brightness}"
     if [[ "${_type}" == "in" ]]; then
       if [[ "${_previous_brightness}" < 100 ]]; then
@@ -261,9 +262,10 @@ _service() {
   _service_brightness_init
   _service_touch_init
   lockscreen-unlock
-  ( _touch_disabled_check_in &
-    _transition \
-      "in")
+  _transition \
+    "in" \
+    "${_transition_duration}" &
+  _touch_disabled_check_in
   _display_dim_check_in
   _focus_check_in
   if (( 0 < "${_length}" )); then
@@ -278,10 +280,11 @@ _service() {
       _time="$(( \
         _time + _poll ))"
     done
+    _transition \
+      "out" \
+      "${_transition_duration}" &
     _focus_check_out
-    ( _touch_disabled_check_out &
-      _transition \
-        "out" )
+    _touch_disabled_check_out
     _display_dim_check_out
   fi
 }
@@ -334,19 +337,22 @@ _activity_launch() {
       "${_touch_disabled}"
   else
     lockscreen-unlock
-    if [[ "${_dim}" == "y" || \
-          "${_transition_type}" == "dim" ]]; then
+    if [[ "${_dim}" == "y" ]]; then
       android-display-dim
-    fi || \
-      true
-    if [[ " ${_activity} " != " "*"."*" " ]]; then
-      _target_activity="${_app}/.${_activity}"
-    else
-      _target_activity="${_app}/${_activity}"
     fi
-    _activity_launch_cmd \
-      "${_target_activity}"
+    if [[ "${_transition_type}" == "dim" ]]; then
+      _transition \
+        "in" \
+        "${_transition_duration}" &
+    fi || \
   fi
+  if [[ " ${_activity} " != " "*"."*" " ]]; then
+    _target_activity="${_app}/.${_activity}"
+  else
+    _target_activity="${_app}/${_activity}"
+  fi
+  _activity_launch_cmd \
+    "${_target_activity}"
 }
 
 _set_overrides() {
