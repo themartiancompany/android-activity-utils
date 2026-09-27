@@ -344,7 +344,7 @@ _activity_launch() {
       _transition \
         "in" \
         "${_transition_duration}" &
-    fi || \
+    fi
   fi
   if [[ " ${_activity} " != " "*"."*" " ]]; then
     _target_activity="${_app}/.${_activity}"
