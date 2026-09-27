@@ -470,9 +470,8 @@ Usage:
                                  It can be 'dim' or 'none'.
                                  Default: ${transition_type}
 
-     -D <transition-duration>    Transition to show during application
-                                 switch or launch.
-                                 It can be 'dim' or 'none'.
+     -D <transition-duration>    Switch/launch transition
+                                 duration in seconds.
                                  Default: ${transition_duration}
 
      -h                          This message.
