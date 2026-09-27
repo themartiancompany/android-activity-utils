@@ -158,7 +158,7 @@ _display_dim_check_out() {
 
 _touch_disabled_check_out() {
   local \
-    _msg=()
+    _msg=() \
     _touch_status
   if \
     [[ "${_touch_disabled}" == "y" ]]; then
@@ -266,22 +266,24 @@ _service() {
       "in")
   _display_dim_check_in
   _focus_check_in
-  while \
-    (( "${_time}" < "${_length}" )); do
-    _focus_check
-    if [[ "${_dim}" == "y" ]]; then
-      _display_dim_check
-    fi
-    sleep \
-      "${_poll}"
-    _time="$(( \
-      _time + _poll ))"
-  done
-  _focus_check_out
-  ( _touch_disabled_check_out &
-    _transition \
-      "out" )
-  _display_dim_check_out
+  if (( 0 < "${_length}" )); then
+    while \
+      (( "${_time}" < "${_length}" )); do
+      _focus_check
+      if [[ "${_dim}" == "y" ]]; then
+        _display_dim_check
+      fi
+      sleep \
+        "${_poll}"
+      _time="$(( \
+        _time + _poll ))"
+    done
+    _focus_check_out
+    ( _touch_disabled_check_out &
+      _transition \
+        "out" )
+    _display_dim_check_out
+  fi
 }
 
 _activity_launch_cmd() {
