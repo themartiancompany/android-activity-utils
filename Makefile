@@ -24,6 +24,7 @@
 #    along with this program.
 #    If not, see <https://www.gnu.org/licenses/>.
 
+SHELL = bash
 _PROJECT=android-activity-utils
 PREFIX ?= /usr/local
 DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/android-activity-utils
