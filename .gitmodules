@@ -1,6 +1,3 @@
-[submodule "bbrightnessctl"]
-	path = bbrightnessctl
-	url = https://github.com/themartiancompany/bbrightnessctl
 [submodule "man"]
 	path = man
 	url = https://github.com/themartiancompany/android-activity-utils-man
