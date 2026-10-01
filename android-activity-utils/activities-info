@@ -1866,8 +1866,6 @@ _dumpsys_json_encode() {
             _sub_task_description_label="${_line_string#     taskDescription: label=\"}"
             if [[ "${_sub_task_description_label}" == *"\"" ]]; then
               _sub_task_description_label="${_sub_task_description_label%\"}"
-            elif [[ "${_sub_task_description_label}" == *"\" icon="* ]]; then
-              _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
             fi
             _msg=(
               "Got sub-task description label"
@@ -1893,6 +1891,12 @@ _dumpsys_json_encode() {
             )
             _msg_info \
               "${_msg[*]}"
+          elif [[ "${_word}" == "iconResource="* ]]; then
+            _sub_task_icon_resource="${_word#iconResource=}"
+          elif [[ "${_word}" == "iconFilename="* ]]; then
+            _sub_task_icon_filename="${_word#iconFilename=}"
+          elif [[ "${_word}" == "primaryColor="* ]]; then
+            _sub_task_primary_color="${_word#primaryColor=}"
           else
             _msg=(
               "Unknown parameter '${_word}'"
