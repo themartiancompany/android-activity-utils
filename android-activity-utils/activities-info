@@ -1759,13 +1759,10 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       _hist_opened="true"
       _hist_index_word="${_line[2]}"
-      echo "${_line_string}"
-      echo "${_line[@]}"
-      echo "${_line[*]}"
-      echo "${_hist_index_word}"
+      _msg_info \
+        "${_line_string}"
       _hist_index_new="${_hist_index_word#$'#'}"
       _hist_index_new="${_hist_index_new%:}"
-      echo "${_hist_index_new}"
       if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
         _msg=(
           "Old index '${_hist_index}'"
@@ -1786,13 +1783,8 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       _sub_hist_opened="true"
       _sub_hist_index_word="${_line[2]}"
-      echo "${_line_string}"
-      echo "${_line[@]}"
-      echo "${_line[*]}"
-      echo "${_sub_hist_index_word}"
       _sub_hist_index_new="${_sub_hist_index_word#$'#'}"
       _sub_hist_index_new="${_sub_hist_index_new%:}"
-      echo "${_sub_hist_index_new}"
       if [[ "${_sub_hist_index}" != "${_sub_hist_index_new}" ]]; then
         _msg=(
           "Old sub-task history item index '${_sub_hist_index}'."
@@ -1861,7 +1853,6 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       _msg_info \
         "${_line_string}"
-      echo " sub hist opened '${_sub_hist_opened}'"
       if [[ "${_sub_hist_opened}" == "false" ]]; then
         _msg=(
           "How is sub-task history item field '${_sub_hist_opened}' not opened?"
