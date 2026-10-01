@@ -1805,8 +1805,8 @@ _dumpsys_json_encode() {
         ${_task_string}
       )
       _task_object_id="${_line[0]}"
-      _task_id="${_line[0]#\#}"
-      for _word in "${_line[@]}"; do
+      _task_id="${_line[1]#\#}"
+      for _word in "${_line[@]:2}"; do
         if [[ "${_word}" == "type="* ]]; then
           _task_type="${_word#type=}"
         else
