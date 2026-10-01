@@ -1770,7 +1770,7 @@ _dumpsys_json_encode() {
   _index=-1
   _window=""
   for _line_string in "${_dumpsys_activity_activities[@]}"; do
-    _line_string="${_line_string%\n}"
+    _line_string="${_line_string%$'\n'}"
     _line=(
       ${_line_string}
     )
