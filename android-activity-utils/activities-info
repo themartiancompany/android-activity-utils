@@ -1713,6 +1713,7 @@ _dumpsys_json_encode() {
         _activity_json_get
       fi
       _hist_index=""
+      _sub_hist_index=""
       _index="$((
         _index + 1 ))"
       _task_string="${_line_string#  \* Task\{}"
