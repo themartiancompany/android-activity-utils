@@ -1852,21 +1852,56 @@ _dumpsys_json_encode() {
       _msg_info \
         "${_msg[*]}"
       _msg_info \
-        "${_line_string}"
+        "Line: '${_line_string}'."
       if [[ "${_sub_hist_opened}" == "false" ]]; then
         _msg=(
           "How is sub-task history item field '${_sub_hist_opened}' not opened?"
         )
         _msg_info \
           "${_msg_info[*]}"
+      _description_word_index=1
       elif [[ "${_sub_hist_opened}" == "true" ]]; then
         for _word in "${_line[@]:1}"; do
           if [[ "${_word}" == "label="* ]]; then
-            _sub_task_description_label="${_word#label=}"
+            _sub_task_description_label="${_line_string#     taskDescription: label=\"}"
+            if [[ "${_sub_task_description_label}" == *"\"" ]]; then
+              _sub_task_description_label="${_sub_task_description_label%\"}"
+            elif [[ "${_sub_task_description_label}" *"\" icon="* ]]; then
+              _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
+            fi
             _msg=(
               "Got sub-task description label"
               "'${_sub_task_description_label}'."
             )
+            _msg_info \
+              "${_msg[*]}"
+            break
+          fi
+        done
+        _line_string="${_line_string#     taskDescription: label=\"${_sub_task_description_label}\" }"
+        _line=(
+          ${_line_string}
+        )
+        for _word in "${_line[@]:1}"; do
+          echo \
+            "${_word}"
+          if [[ "${_word}" == "label="* ]]; then
+            _sub_task_description_label="${_line_string#     taskDescription: label=\"}"
+            if [[ "${_sub_task_description_label}" == *"\"" ]]; then
+              _sub_task_description_label="${_sub_task_description_label%\"}"
+            elif [[ "${_sub_task_description_label}" *"\" icon="* ]]; then
+              _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
+            fi
+            _msg=(
+              "Got sub-task description label"
+              "'${_sub_task_description_label}'."
+            )
+            _msg_info \
+              "${_msg[*]}"
+            for _description_word \
+              in "${_line[@]:${_description_word_index}}"; do
+              _
+            done
           else
             _msg=(
               "Unknown parameter '${_word}'"
@@ -1881,6 +1916,8 @@ _dumpsys_json_encode() {
                 "${_msg[*]}"
             fi
           fi
+          _description_word_index=$((
+            _description_word_index + 1))
         done
       else
         _msg=(
