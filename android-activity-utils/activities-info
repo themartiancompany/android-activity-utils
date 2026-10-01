@@ -975,9 +975,9 @@ _hist_json_get() {
     _msg_info \
       "${_msg[*]}"
   fi
-  # _hist+=(
-  #   "${_activity}"
-  # )
+  _hist+=(
+    "${_hist_json}"
+  )
   if [[ "${quiet}" == "n" ]]; then
     echo \
       "${_hist_json}"
