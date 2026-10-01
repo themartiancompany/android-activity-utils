@@ -1747,7 +1747,9 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       _hist_opened="true"
       _hist_index_word="${_line[1]}"
+      echo "${_hist_index_word}"
       _hist_index_new="${_hist_index_word#$'#'}"
+      echo "${_hist_index_word_new}"
       if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
         _msg=(
           "Old index '${_hist_index}'"
