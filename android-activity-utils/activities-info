@@ -1745,7 +1745,7 @@ _dumpsys_json_encode() {
         fi
       done
       _values_clean
-    elif [[ "${_line_string}" == "    * Hist  #"* ]]; then
+    elif [[ "${_line_string}" == "    * Hist "* ]]; then
       _msg=(
         "Parsing task history line."
       )
