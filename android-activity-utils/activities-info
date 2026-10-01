@@ -1866,7 +1866,7 @@ _dumpsys_json_encode() {
             _sub_task_description_label="${_line_string#     taskDescription: label=\"}"
             if [[ "${_sub_task_description_label}" == *"\"" ]]; then
               _sub_task_description_label="${_sub_task_description_label%\"}"
-            elif [[ "${_sub_task_description_label}" *"\" icon="* ]]; then
+            elif [[ "${_sub_task_description_label}" == *"\" icon="* ]]; then
               _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
             fi
             _msg=(
