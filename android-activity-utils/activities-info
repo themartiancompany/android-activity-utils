@@ -1587,7 +1587,7 @@ _dumpsys_json_encode() {
     _client \
     _client_word \
     _display \
-    _draw_state \ # old
+    _draw_state \
     _enter_animation_pending \
     _fit_sides \
     _fit_sides_word \
