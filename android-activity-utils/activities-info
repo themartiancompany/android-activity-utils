@@ -1861,7 +1861,7 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       _msg_info \
         "${_line_string}"
-      echo " sub hist opened '${_sub_history_opened}'"
+      echo " sub hist opened '${_sub_hist_opened}'"
       if [[ "${_sub_hist_opened}" == "false" ]]; then
         _msg=(
           "How is sub-task history item field '${_sub_hist_opened}' not opened?"
