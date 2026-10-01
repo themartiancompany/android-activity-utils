@@ -1746,12 +1746,18 @@ _dumpsys_json_encode() {
       done
       _values_clean
     elif [[ "${_line_string}" == "    * Hist: "* ]]; then
+      _msg=(
+        "Parsing task history line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _hist_opened="true"
       _hist_index_new="${_line[1]#\#}"
       if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
         if [[ "${_hist_index}" != "" ]]; then
-        _hist_json_get \
-          "${_hist_index}"
-        _hist_opened="true"
+          _hist_json_get \
+            "${_hist_index}"
+        fi
         _hist_index="${_hist_index_new}"
       fi
     # '    * Hist'
