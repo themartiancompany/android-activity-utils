@@ -1785,7 +1785,13 @@ _dumpsys_json_encode() {
       )
       _msg_info \
         "${_msg[*]}"
-      if [[ "${_hist_opened}" == "true" ]]; then
+      if [[ "${_hist_opened}" == "false" ]]; then
+        _msg=(
+          "How is history item field '${_hist_opened}' not opened?"
+        )
+        _msg_info \
+          "${_msg_info[*]}"
+      elif [[ "${_hist_opened}" == "true" ]]; then
         for _word in "${_line[@]:1}"; do
           if [[ "${_word}" == "label="* ]]; then
             _task_description_label="${_word#label=}"
