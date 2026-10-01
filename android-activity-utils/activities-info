@@ -1510,7 +1510,6 @@ _values_clean() {
   _surface_transform_word=""
   _system_decor_rect=""
   _sysuil=""
-  _task_description_label=""
   _token_activity_record_user=""
   _token_token=""
   _token_type=""
@@ -1757,6 +1756,7 @@ _dumpsys_json_encode() {
         _hist_json_get \
           "${_hist_index}"
         _hist_index="${_hist_index_new}"
+        _task_description_label=""
       fi
     # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
