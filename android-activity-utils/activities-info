@@ -1968,6 +1968,7 @@ _dumpsys_json_encode() {
     else
       _msg=(
         "Activity '${_index}',"
+        "task history '${_hist_index}',"
         "unparsed line '${_line_string}'."
       )
       if [[ "${_strict_mode}" == "n" ]]; then
