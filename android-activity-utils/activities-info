@@ -1,0 +1,1978 @@
+#!/usr/bin/env bash
+
+# SPDX-License-Identifier: AGPL-3.0
+
+#    -----------------------------------------------------
+#    Copyright © 2024, 2025, 2026  Pellegrino Prevete
+#
+#    All rights reserved
+#    -----------------------------------------------------
+#
+#    This program is free software: you can redistribute
+#    it and/or modify it under the terms of the
+#    GNU Affero General Public License as published by
+#    the Free Software Foundation, either version 3 of
+#    the License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it
+#    will be useful, but WITHOUT ANY WARRANTY;
+#    without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#    See the GNU Affero General Public License for
+#    more details.
+#
+#    You should have received a copy of the
+#    GNU Affero General Public License
+#    along with this program.
+#    If not, see <https://www.gnu.org/licenses/>.
+
+_bin="$(
+  dirname \
+    "$(command \
+         -v \
+         "env")")"
+_lib="${_bin}/../lib"
+_share="${_bin}/../share"
+_crash_bash="${_lib}/libcrash-bash/crash-bash"
+_sourced \
+  "${_crash_bash}" \
+  2>"/dev/null" \
+  1>"/dev/null" || \
+source \
+  "${_crash_bash}"
+
+_root_requirements() {
+  _check_cmd \
+    "awk" \
+    "gawk"
+  _check_cmd \
+    "sdk-version" \
+    "android-utils"
+  _check_cmd \
+    "sed"
+  _check_cmd \
+    "su"
+}
+
+# shellcheck disable=SC2034
+_global_variables() {
+  get_date=""
+  output_format=""
+  get_mode=""
+  strict_mode=""
+  color=""
+  quiet=""
+}
+
+_root_get() {
+  local \
+    _dumpsys \
+    _cmd \
+    _msg=() \
+    _sdk
+  _sdk="$(
+    sdk-version)"
+  _msg=(
+    "Detected SDK version '${_sdk}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if (( 32 < "${_sdk}" )); then
+    _cmd=(
+      "/system/bin/dumpsys"
+        "activity"
+        "activities"
+    )
+  elif (( "${_sdk}" < 28 )); then
+    _cmd=(
+      "/system/bin/dumpsys"
+        "activity"
+        "activities"
+    )
+  else
+    _cmd=(
+      "/system/bin/dumpsys"
+        "activity"
+        "activities"
+    )
+  fi
+  _msg=(
+    "Running '${_cmd[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _dumpsys="$(
+    su \
+      -c \
+      "${_cmd[*]}" || \
+      true)"
+  if [[ "${_dumpsys}" == "" ]]; then
+    _msg=(
+      "Error running '${_cmd[*]}'."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  "_dumpsys_${_output_format}_encode" \
+    "${_dumpsys}"
+}
+
+_dumpsys_plain_encode() {
+  local \
+    _dumpsys="${1}"
+  echo \
+    "${_dumpsys}"
+}
+
+_session_json_get() {
+  local \
+    _session_id="${1}" \
+    _session_object_type="${2}" \
+    _unknown_session_id="${3}" \
+    _uid="${4}" \
+    _app_user_name="${5}" \
+    _client="${6}" \
+    _session_encode_opts=() \
+    _msg=()
+  _msg=(
+    "Getting session JSON."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _session_encode_opts+=(
+    --arg
+      "id"
+        "${_session_id}"
+    --arg
+      "object-type"
+        "${_session_object_type}"
+    --arg
+      "unknown-session-id"
+        "${_unknown_session_id}"
+        # "${_user_word}"
+    --arg
+      "app-uid":
+        "${_uid}"
+    --arg
+      "app-user-name":
+        "${_app_user_name}"
+    --arg
+      "mClient":
+        "${_client}"
+  )
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_session_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _session_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_session_encode_opts[@]}" \
+      '$ARGS.named')"
+}
+
+_insets_json_get() {
+  local \
+    _insets=() \
+    _insets_encode_opts=() \
+    _index \
+    _index_end \
+    _inset \
+    _key \
+    _msg=()
+  insets+=(
+    "$@"
+  )
+  _index_end=$((
+    ${#_insets[@]} - 1 ))
+  for _index \
+    in $(seq \
+           0 \
+           ${_index_end} ); do
+    _inset="${_insets["${_index}"]}"
+    if [[ "${_inset}" != "" ]]; then
+      if [[ "${_index}" == 0 ]]; then
+        _key="left"
+      elif [[ "${_index}" == 1 ]]; then
+        _key="top"
+      elif [[ "${_index}" == 2 ]]; then
+        _key="right"
+      elif [[ "${_index}" == 3 ]]; then
+        _key="bottom"
+      fi
+      _insets_encode_opts+=(
+        --arg
+          "${_key}" \
+            "${_inset}"
+      )
+    fi
+  done
+  _insets_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_insets_encode_opts[@]}" \
+      '$ARGS.named')"
+  _msg=(
+    "Insets JSON: ${_insets_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_attrs_json_get() {
+  local \
+    _position_layout="${1}" \
+    _position="${2}" \
+    _layout="${3}" \
+    _flags_json="${4}" \
+    _private_flags_json="${5}" \
+    _behaviour="${6}" \
+    _fit_sides="${7}" \
+    _adjust="${8}" \
+    _sysuil="${9}" \
+    _vsysui="${10}" \
+    _wanim="${11}" \
+    _or="${12}" \
+    _if="${13}" \
+    _user_activity_timeout="${14}" \
+    _sim_json="${15}" \
+    _provided_insets_json="${16}" \
+    _receive_something="${17}" \
+    _insets_set="${18}" \
+    _ignoring_something="${19}" \
+    _z_order="${20}" \
+    _attrs_encode_opts=() \
+    _msg=()
+  if [[ "${_position_layout}" == "" || \
+        "${_position}" == "" || \
+        "${_layout}" == "" ]]; then
+    _msg=(
+      "The arguments 'position layout',"
+      "'position' and 'layout' are mandatory."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  _attrs_encode_opts+=(
+    --arg
+      "position-layout"
+        "${_position_layout}"
+    --arg
+      "position"
+        "${_position}"
+    --arg
+      "layout"
+        "${_layout}"
+  )
+  if [[ "${_flags_json}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --argjson
+        "fl"
+          "${_flags_json}"
+    )
+  fi
+  if [[ "${_private_flags_json}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --argjson
+        "pfl"
+          "${_private_flags_json}"
+    )
+  fi
+  if [[ "${_provided_insets_json}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --argjson
+        "providedInsets"
+          "${_provided_insets_json}"
+    )
+  fi
+  if [[ "${_behavior}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "bhv"
+          "${_behavior}"
+    )
+  fi
+  if [[ "${_fit_sides}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "fitSides"
+          "${_fit_sides}"
+    )
+  fi
+  if [[ "${_if}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "if"
+          "${_if}"
+    )
+  fi
+  if [[ "${_sim_json}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --argjson
+        "sim"
+          "${_sim_json}"
+    )
+  fi
+  if [[ "${_user_activity_timeout}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "userActivityTimeout"
+          "${_user_activity_timeout}"
+    )
+  fi
+  if [[ "${_adjust}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "adjust"
+          "${_adjust}"
+    )
+  fi
+  if [[ "${_or}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "or"
+          "${_or}"
+    )
+  fi
+  if [[ "${_sysuil}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "sysuil"
+          "${_sysuil}"
+    )
+  fi
+  if [[ "${_vsysui}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "vsysui"
+          "${_vsysui}"
+    )
+  fi
+  if [[ "${_wanim}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "wanim"
+          "${_wanim}"
+    )
+  fi
+  if [[ "${_receive_something}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "receive"
+          "true"
+    )
+  fi
+  if [[ "${_insets_set}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "insets"
+          "true"
+    )
+  fi
+  if [[ "${_ignoring_something}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "ignoring"
+          "true"
+    )
+  fi
+  if [[ "${_z_order}" != "" ]]; then
+    _attrs_encode_opts+=(
+      --arg
+        "z-order"
+          "true"
+    )
+  fi
+  _attrs_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_attrs_encode_opts[@]}" \
+      '$ARGS.named')"
+}
+
+_flags_json_get() {
+  local \
+    _flags=() \
+    _flags_jq_arg \
+    _flags_encode_opts=() \
+    _msg=()
+  _flags+=(
+    "$@"
+  )
+  _msg=(
+    "Getting flags JSON."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _flags_jq_arg="[$(
+    IFS=","; \
+    echo \
+      "${_flags[*]}")]"
+  _flags_encode_opts+=(
+    --argjson
+      "flags"
+        "${_flags_jq_arg}"
+  )
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_flags_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _flags_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_flags_encode_opts[@]}" \
+      '$ARGS.named.flags')"
+  _msg=(
+    "Flags JSON: ${_flags_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_private_flags_json_get() {
+  local \
+    _private_flags=() \
+    _private_flags_encode_opts=() \
+    _private_flags_jq_arg \
+    _msg=()
+  _private_flags+=(
+    "$@"
+  )
+  _msg=(
+    "Getting private flags JSON."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _private_flags_jq_arg="[$(
+    IFS=","; \
+    echo \
+      "${_private_flags[*]}")]"
+  _private_flags_encode_opts+=(
+    --argjson
+      "pflags"
+        "${_private_flags_jq_arg}"
+  )
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_private_flags_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _private_flags_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_private_flags_encode_opts[@]}" \
+      '$ARGS.named.pflags')"
+  _msg=(
+    "Private flags JSON: ${_private_flags_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_token_json_get() {
+  local \
+    _window_token_id="${1}" \
+    _token_type="${2}" \
+    _token_token="${3}" \
+    _token_activity_record_user="${4}" \
+    _activity_record_unknown_id="${5}" \
+    _window_token_type="${6}" \
+    _window_grouping_token="${7}" \
+    _msg=() \
+    _token_encode_opts=()
+  _msg=(
+    "Generating window token"
+    "JSON."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _token_encode_opts+=(
+    --arg
+      "id"
+        "${_window_token_id}"
+    --arg
+      "type"
+        "${_token_type}"
+    --arg
+      "window-grouping-token"
+        "${_window_grouping_token}"
+  )
+  if [[ "${_window_token_type}" != "" ]]; then
+    _token_encode_opts+=(
+      --arg
+        "object-type"
+          "${_window_token_type}"
+    )
+  else
+    _msg=(
+      "Why no window token type?"
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+  if [[ "${_activity_record_unknown_id}" != "" ]]; then
+    _token_encode_opts+=(
+      --arg
+        "activity-record-unknown-id"
+          "${_activity_record_unknown_id}"
+    )
+  else
+    if [[ "${_window_token_type}" == "ActivityRecorder" ]]; then
+      _msg=(
+        "An 'ActivityRecorder' without the unknown"
+        "id."
+      )
+      _msg_warning \
+        "${_msg[*]}"
+    fi
+  fi
+  if [[ "${_token_token}" != "" ]]; then
+    _token_encode_opts+=(
+      --arg
+        "token"
+          "${_token_token}"
+    )
+  fi
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_token_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _token_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_token_encode_opts[@]}" \
+      '$ARGS.named')"
+  _msg=(
+    "Window token JSON: ${_token_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_frames_json_get() {
+  local \
+    _frames_display="${1}" \
+    _frames_frame="${2}" \
+    _frames_last="${3}" \
+    _frames_surface="${4}" \
+    _frames_insets_change="${5}" \
+    _frames_insets_changed="${6}" \
+    _frames_encode_opts=() \
+    _msg=()
+  _frames_encode_opts+=(
+    --arg
+      "display"
+        "${_frames_display}"
+    --arg
+      "frame"
+        "${_frames_frame}"
+    --arg
+      "last"
+        "${_frames_last}"
+    --arg
+      "surface"
+        "${_frames_surface}"
+  )
+  if [[ "${_frames_insets_change}" != "" ]]; then
+    _frames_encode_opts+=(
+      --arg
+        "insetsChange"
+          "${_frames_insets_change}"
+    )
+  fi
+  if [[ "${_frames_insets_changed}" != "" ]]; then
+    _frames_encode_opts+=(
+      --arg
+        "insetsChanged"
+          "${_frames_insets_changed}"
+    )
+  fi
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_frames_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _frames_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_frames_encode_opts[@]}" \
+      '$ARGS.named')"
+  _msg=(
+    "Window frames JSON: ${_frames_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_msurface_json_get() {
+  local \
+    _surface_name="${1}" \
+    _surface_id="${2}" \
+    _msg=() \
+    _msurface_encode_opts=()
+  if [[ "${_surface_id}" != "" ]]; then
+    _msurface_encode_opts+=(
+      --arg
+        "name"
+          "${_surface_name}"
+      --arg
+        "id"
+          "${_surface_id}"
+    )
+    _msg=(
+      "Running jq with options"
+      "'${_jq_opts[*]}"
+      "${_msurface_encode_opts[*]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _msurface_json="$(
+      jq \
+        "${_jq_opts[@]}" \
+        "${_msurface_encode_opts[@]}" \
+        '$ARGS.named')"
+    _msg=(
+      "Window mSurface JSON: ${_msurface_json}"
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
+_surface_json_get() {
+  local \
+    _surface_shown="${1}" \
+    _surface_layer="${2}" \
+    _surface_alpha="${3}" \
+    _surface_rect="${4}" \
+    _surface_transform=() \
+    _msg=() \
+    _surface_encode_opts=()
+  _surface_transform+=(
+    "$@"
+  )
+  _surface_encode_opts+=(
+    --arg
+      "shown"
+        "${_surface_shown}"
+    --arg
+      "layer"
+        "${_surface_layer}"
+    --arg
+      "alpha"
+        "${_surface_alpha}"
+    --arg
+      "rect"
+        "${_surface_rect}"
+  )
+  if [[ "${_surface_transform[*]}" != "" ]]; then
+    _surface_encode_opts+=(
+      # In case one wanted
+      # to have also those encoded
+      # it's easier with this array.
+      --arg
+        "transform"
+          "(${_surface_transform[*]})"
+    )
+  fi
+  if [[ "${_surface_rect}" != "" ]]; then
+    _msg=(
+      "Running jq with options"
+      "'${_jq_opts[*]}"
+      "${_surface_encode_opts[*]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _surface_json="$(
+      jq \
+        "${_jq_opts[@]}" \
+        "${_surface_encode_opts[@]}" \
+        '$ARGS.named')"
+    _msg=(
+      "State animator surface JSON: ${_surface_json}"
+    )
+  fi
+}
+
+_state_animator_json_get() {
+  local \
+    _state_animator_id="${1}" \
+    _state_animator_owner="${2}" \
+    _draw_state="${3}" \
+    _last_hidden="${4}" \
+    _enter_animation_pending="${5}" \
+    _system_decor_rect="${6}" \
+    _msurface_json="${7}" \
+    _surface_json="${8}" \
+    _msg=() \
+    _state_animator_encode_opts=()
+  _state_animator_encode_opts+=(
+    --arg
+      "id"
+        "${_state_animator_id}"
+    --arg
+      "owner"
+        "${_state_animator_owner}"
+  )
+  if [[ "${_draw_state}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --arg
+        "mDrawState"
+          "${_draw_state}"
+    )
+  fi
+  if [[ "${_last_hidden}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --arg
+        "mLastHidden"
+          "${_last_hidden}"
+    )
+  fi
+  if [[ "${_enter_animation_pending}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --arg
+        "mEnterAnimationPending"
+          "${_enter_animation_pending}"
+    )
+  fi
+  if [[ "${_system_decor_rect}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --arg
+        "mSystemDecorRect"
+          "${_system_decor_rect}"
+    )
+  fi
+  if [[ "${_msurface_json}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --argjson
+        "mSurface"
+          "${_msurface_json}"
+    )
+  fi
+  if [[ "${_surface_json}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --argjson
+        "Surface"
+          "${_surface_json}"
+    )
+  fi
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts[*]}"
+    "${_state_animator_encode_opts[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _state_animator_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_state_animator_encode_opts[@]}" \
+      '$ARGS.named')"
+  _msg=(
+    "Window State Animator JSON: ${_state_animator_json}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+}
+
+_sim_json_get() {
+  local \
+    _sim=() \
+    _forward_navigation \
+    _param \
+    _sim_adjust \
+    _sim_state \
+    _sim_encode_opts=() \
+    _word \
+    _msg=()
+  _sim_adjust=""
+  _sim_state=""
+  _forward_navigation=""
+  for _word in "${_sim[@]}"; do
+    _param="${_word#\{}"
+    _param="${_param%\}}"
+    if [[ "${_param}" == "adjust="* ]]; then
+      _sim_adjust="${_param#adjust=}"
+    elif [[ "${_param}" == "state="* ]]; then
+      _sim_state="${_param#state=}"
+    elif [[ "${_param}" == "forwardNavigation" ]]; then
+      _forward_navigation="true"
+    else
+      _msg=(
+        "Unknown sim parameter"
+        "'${_param}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  done
+  if [[ "${_sim_adjust}" != "" ]]; then
+    _sim_encode_opts+=(
+      --arg
+        "adjust"
+          "${_sim_adjust}"
+    )
+  fi
+  if [[ "${_sim_state}" != "" ]]; then
+    _sim_encode_opts+=(
+      --arg
+        "state"
+          "${_sim_state}"
+    )
+  fi
+  if [[ "${_forward_navigation}" != "" ]]; then
+    _sim_encode_opts+=(
+      --arg
+        "forwardNavigation"
+          "${_forward_navigation}"
+    )
+  fi
+  if [[ "${_sim_encode_opts[*]}" != "" ]]; then
+    _sim_json="$(
+     jq \
+      "${_jq_opts[@]}" \
+      "${_sim_encode_opts[@]}" \
+      '$ARGS.named')"
+  else
+    _msg=(
+      "Window has no 'soft input mode'"
+      "layout attributes."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
+_provided_insets_json() {
+  local \
+    _insets
+}
+
+_window_json_get() {
+  local \
+    _msg=() \
+    _attrs_json \
+    _attrs_json_get_args=() \
+    _frames_json \
+    _frames_json_get_args=() \
+    _flags_json \
+    _keep_clear_areas_json \
+    _keep_clear_areas_json_get_args=() \
+    _msurface_json \
+    _msurface_json_get_args=() \
+    _private_flags_json \
+    _provided_insets_json \
+    _session_json \
+    _session_json_get_args=() \
+    _sim_json \
+    _surface_json \
+    _surface_json_get_args=() \
+    _state_animator_json \
+    _state_animator_json_get_args=() \
+    _surface \
+    _surface_encode_opts=() \
+    _token_json \
+    _token_json_get_args=() \
+    _window_encode_opts=() \
+    _msg=()
+  _attrs_json=""
+  _frames_json=""
+  _msurface_json=""
+  _provided_insets_json=""
+  _session_json=""
+  _sim_json=""
+  _surface_json=""
+  _state_animator_json=""
+  _msg=(
+    "Encoding window object JSON."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _session_json_get_args+=(
+    "${_session_id}"
+    "${_session_object_type}"
+    "${_user_word}"
+    "${_uid}"
+    "${_app_user_name}"
+    "${_client}"
+  )
+  _session_json_get \
+    "${_session_json_get_args[@]}"
+  _flags_json_get \
+    "${_flags[@]}"
+  _private_flags_json_get \
+    "${_private_flags[@]}"
+  _sim_json_get \
+    "${_sim}"
+  _insets_json_get \
+    "${_insets[@]}"
+  # _provided_insets_json_get
+  _attrs_json_get_args+=(
+    "${_position_layout}"
+    "${_position}"
+    "${_layout}"
+    "${_flags_json}"
+    "${_private_flags_json}"
+    "${_behavior}"
+    "${_fit_sides}"
+    "${_adjust}"
+    "${_sysuil}"
+    "${_vsysui}"
+    "${_wanim}"
+    "${_or}"
+    "${_if}"
+    "${_user_activity_timeout}"
+    "${_sim_json}"
+    "${_provided_insets_json}"
+    "${_receive_something}"
+    "${_insets_set}"
+    "${_ignoring_something}"
+    "${_z_order}"
+  )
+  _msg=(
+    "Running '_attrs_json_get'"
+    "with arguments '${_attrs_json_get_args[*]}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _attrs_json_get \
+    "${_attrs_json_get_args[@]}"
+  _token_json_get_args+=(
+    "${_window_token_id}"
+    "${_token_type}"
+    "${_token_token}"
+    "${_token_activity_record_user}"
+    "${_activity_record_unknown_id}"
+    "${_window_token_type}"
+    "${_window_grouping_token}"
+  )
+  _token_json_get \
+    "${_token_json_get_args[@]}"
+  _frames_json_get_args+=(
+    "${_frames_display}"
+    "${_frames_frame}"
+    "${_frames_last}"
+    "${_frames_surface}"
+    "${_frames_insets_change}"
+    "${_frames_insets_changed}"
+  )
+  _frames_json_get \
+    "${_frames_json_get_args[@]}"
+  _msurface_json_get_args+=(
+    "${_surface_name}"
+    "${_surface_id}"
+  )
+  _msurface_json_get \
+    "${_msurface_json_get_args[@]}"
+  _surface_json_get_args+=(
+    "${_surface_shown}"
+    "${_surface_layer}"
+    "${_surface_alpha}"
+    "${_surface_rect}"
+    "${_surface_transform[@]}"
+  )
+  _surface_json_get \
+    "${_surface_json_get_args[@]}"
+  _state_animator_json_get_args+=(
+    "${_state_animator_id}"
+    "${_state_animator_owner}"
+    "${_draw_state}"
+    "${_last_hidden}"
+    "${_enter_animation_pending}"
+    "${_system_decor_rect}"
+    "${_msurface_json}"
+    "${_surface_json}"
+  )
+  _state_animator_json_get \
+    "${_state_animator_json_get_args[@]}"
+  _window_encode_opts+=(
+    --arg
+      "id"
+        "${_id}"
+    --arg
+      "user-id"
+        "${_user_id}"
+    --arg
+      "activity"
+        "${_activity}"
+    --arg
+      "mDisplayId"
+        "${_display_id}"
+    --arg
+      "rootId"
+        "${_display_id}"
+    --argjson
+      "mAttrs"
+        "${_attrs_json}"
+    --argjson
+      "mSession"
+        "${_session_json}"
+    --argjson
+      "mToken"
+        "${_token_json}"
+    --arg
+      "mOwnerUid"
+        "${_owner_uid}"
+    --arg
+      "showForAllUsers"
+        "true"
+    --arg
+      "package"
+        "${_package}"
+    --arg
+      "appop"
+        "${_app_op}"
+    --arg
+      "w"
+        "${_requested_width}"
+    --arg
+      "h"
+        "${_requested_height}"
+    --arg
+      "mLayoutSeq"
+        "${_layout_sequence_number}"
+    --arg
+      "mBaseLayer"
+        "${_base_layer}"
+    --arg
+      "mSubLayer"
+        "${_sub_layer}"
+    --arg
+      "mViewVisibility"
+        "${_view_visibility}"
+    --arg
+      "mHaveFrame"
+        "${_have_frame}"
+    --arg
+      "mObscured"
+        "${_view_obscured}"
+    --arg
+      "mGivenContentInsets"
+        "${_given_content_insets}"
+    --arg
+      "mGivenVisibleInsets"
+        "${_given_visible_insets}"
+    --arg
+      "mFullConfiguration"
+        "${_full_configuration_string}"
+    --arg
+      "mLastReportedConfiguration"
+        "${_last_reported_configuration_string}"
+    --argjson
+      "Frames"
+        "${_frames_json}"
+  )
+  if [[ "${_state_animator_json}" != "" ]]; then
+    _state_animator_encode_opts+=(
+      --argjson
+        "WindowStateAnimator"
+          "${_state_animator_json}"
+    )
+  fi
+  if [[ "${_window_removal_allowed}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mWindowRemovalAllowed"
+          "${_window_removal_allowed}"
+    )
+  fi
+  if [[ "${_has_surface}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mHasSurface"
+          "${_has_surface}"
+    )
+  fi
+  if [[ "${_is_ready_for_display}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "isReadyForDisplay()"
+          "${_is_ready_for_display}"
+    )
+  fi
+  if [[ "${_touchable_insets}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mTouchableInsets"
+          "${_touchable_insets}"
+    )
+  fi
+  if [[ "${_given_insets_pending}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mGivenInsetsPending"
+          "${_given_insets_pending}"
+    )
+  fi
+  if [[ "${_touchable_region}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "touchable-region"
+          "${_touchable_region}"
+    )
+  fi
+  if [[ "${_last_freeze_duration}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mLastFreezeDuration"
+          "${_last_freeze_duration}"
+    )
+  fi
+  if [[ "${_force_seamlessly_rotate}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mForceSeamlesslyRotate"
+          "${_force_seamlessly_rotate}"
+    )
+  fi
+  if [[ "${_rotate_pending}" != "" ]]; then
+    _window_encode_opts+=(
+      --argjson
+        "seamlesslyRotate"
+          "{ \"pending\": \"${_rotate_pending}\"}"
+    )
+  fi
+  if [[ "${_is_on_screen}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "isOnScreen"
+          "${_is_on_screen}"
+    )
+  fi
+  if [[ "${_is_visible}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "isVisible"
+          "${_is_visible}"
+    )
+  fi
+  if [[ "${_prepare_sync_seq_id}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mPrepareSyncSeqId"
+          "${_prepare_sync_seq_id}"
+    )
+  fi
+  if [[ "${_is_floating_layer}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mIsFloatingLayer"
+          "${_is_floating_layer}"
+    )
+  fi
+  if [[ "${_is_im_window}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mIsImWindow"
+          "${_is_im_window}"
+    )
+  fi
+  if [[ "${_is_wallpaper}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mIsWallpaper"
+          "${_is_wallpaper}"
+    )
+  fi
+  if [[ "${_policy_visibility}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mPolicyVisibility"
+          "${_policy_visibility}"
+    )
+  fi
+  if [[ "${_legacy_policy_visibility_after_anim}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mLegacyPolicyVisibilityAfterAnim"
+          "${_legacy_policy_visibility_after_anim}"
+    )
+  fi
+  if [[ "${_parent_hidden}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "parentHidden"
+          "${_parent_hidden}"
+    )
+  fi
+  if [[ "${_permanently_hidden}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mPermanentlyHidden"
+          "${_permanently_hidden}"
+    )
+  fi
+  if [[ "${_hidden_while_suspended}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mHiddenWhileSuspended"
+          "${_permanently_hidden}"
+    )
+  fi
+  if [[ "${_force_hide_non_system_overlay_window}" != "" ]]; then
+    _window_encode_opts+=(
+      --arg
+        "mForceHideNonSystemOverlayWindow"
+          "${_force_hide_non_system_overlay_window}"
+    )
+  fi
+  if [[ "${_areas_restricted}" != "" ]]; then
+    _keep_clear_areas_encode_opts+=(
+      --arg
+        "restricted"
+          "${_areas_restricted}"
+    )
+  fi
+  if [[ "${_areas_unrestricted}" != "" ]]; then
+    _keep_clear_areas_encode_opts+=(
+      --arg
+        "unrestricted"
+          "${_areas_unrestricted}"
+    )
+  fi
+  if [[ "${_areas_restricted}" != "" || \
+        "${_areas_unrestricted}" != "" ]]; then
+    _keep_clear_areas_encode_opts+=(
+      '$ARGS.named'
+    )
+    _keep_clear_areas="$(
+      jq \
+        "${_jq_opts[@]}" \
+        "${_keep_clear_areas_encode_opts[@]}")"
+    _window_encode_opts+=(
+      --argjson
+        "keepClearAreas"
+          "${_keep_clear_areas}"
+    )
+  fi
+  _window_encode_opts+=(
+    '$ARGS.named'
+  )
+  _window="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_window_encode_opts[@]}")"
+  _msg=(
+    "Detected window ${_index},"
+    "extracted:"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _windows+=(
+    "${_window}"
+  )
+  if [[ "${quiet}" == "n" ]]; then
+    echo \
+      "${_window}"
+  fi
+  _window=""
+}
+
+_values_clean() {
+  _activity_check=""
+  _activity_record_opened=""
+  _activity_record_unknown_id=""
+  _adjust=""
+  _app_op=""
+  _app_op_word=""
+  _app_op_visibility=""
+  _app_user=""
+  _app_user_id=""
+  _app_user_name=""
+  _area_restricted=""
+  _area_unrestricted=""
+  _base_layer=""
+  _base_layer_word=""
+  _behavior=""
+  _behavior_word=""
+  _client_word=""
+  _client=""
+  _display_id=""
+  _display_id_word=""
+  _draw_state=""
+  _enter_animation_pending=""
+  _fit_sides=""
+  _fit_sides_word=""
+  _fl=""
+  _fl_word=""
+  _fmt=""
+  _if=""
+  _flags=()
+  _full_configuration_string=""
+  _given_content_insets=""
+  _given_content_insets_word=""
+  _given_visible_insets=""
+  _given_visible_insets_word=""
+  _gr=()
+  _force_seamlessly_rotate=""
+  _force_hide_non_system_overlay_window=""
+  _frames_display=""
+  _frames_frame=""
+  _frames_insets_change=""
+  _frames_insets_changed=""
+  _frames_last=""
+  _frames_last_word=""
+  _frames_parent=""
+  _frames_surface=""
+  _frames_surface_word=""
+  _have_frame=""
+  _have_frame_word=""
+  _has_surface=""
+  _has_surface_word=""
+  _hidden_while_suspended=""
+  _ignoring_something=""
+  _insets_opened=""
+  _insets_param=""
+  _insets_params=()
+  _insets_set=""
+  _is_floating_layer=""
+  _is_im_window=""
+  _is_on_screen=""
+  _is_wallpaper=""
+  _is_ready_for_display=""
+  _is_ready_for_display_word=""
+  _is_visible=""
+  _last_freeze_duration=""
+  _last_hidden=""
+  _last_reported_configuration_string=""
+  _layout=""
+  _layout_in_display_cutout_mode=""
+  _layout_sequence_number=""
+  _layout_sequence_number_word=""
+  _legacy_policy_visibility_after_anim=""
+  _or=""
+  _owner_uid=""
+  _owner_uid_word=""
+  _package=""
+  _package_word=""
+  _parent_hidden=""
+  _permanently_hidden=""
+  _pfl=""
+  _pfl_word=""
+  _policy_visibility=""
+  _position=""
+  _position_layout=""
+  _position_layout_word=""
+  _prepare_sync_seq_id=""
+  _private_flags=()
+  _provided_insets_object_type=""
+  _provided_insets_object_type_word=""
+  _receive_something=""
+  _requested_height=""
+  _requested_height_word=""
+  _requested_width=""
+  _requested_width_word=""
+  _root_task_id=""
+  _root_task_id_word=""
+  _rotate_pending=""
+  _session_id=""
+  _session_id_word=""
+  _session_object_type=""
+  _session_unknown_id=""
+  _show_for_all_users=""
+  _show_for_all_users_word=""
+  _sim=""
+  _state_animator_id=""
+  _state_animator_id_word=""
+  _state_animator_owner=""
+  _state_animator_owner_word=""
+  _sub_layer=""
+  _sub_layer_word=""
+  _surface_alpha=""
+  _surface_id=""
+  _surface_index=""
+  _surface_layer=""
+  _surface_name=""
+  _surface_name_word=""
+  _surface_rect=""
+  _surface_shown=""
+  _surface_transform=()
+  _surface_transform_word=""
+  _system_decor_rect=""
+  _sysuil=""
+  _token_activity_record_user=""
+  _token_token=""
+  _token_type=""
+  _touchable_insets=""
+  _touchable_insets_word=""
+  _touchable_region=""
+  _touchable_region_word=""
+  _ty=""
+  _uid=""
+  _user_activity_timeout=""
+  _user_unknown_id=""
+  _user_word=""
+  _view_obscured=""
+  _view_obscured_word=""
+  _view_visibility=""
+  _view_visibility_word=""
+  _vsysui=""
+  _vsysui_word=""
+  _wanim=""
+  _window_grouping_token=""
+  _window_removal_allowed=""
+  _window_removal_allowed_word=""
+  _window_token_id=""
+  _window_token_id_word=""
+  _window_token_type=""
+  _z_order=""
+}
+
+_insets_parse() {
+  local \
+    _insets_params=() \
+    _msg=() \
+    _param \
+    _left \
+    _top \
+    _right \
+    _bottom
+  _top=""
+  _left=""
+  _right=""
+  _bottom=""
+  _insets_params+=(
+    "$@"
+  )
+  for _param in "${_insets_params[@]}"; do
+    if [[ "${_param}" == "left="* ]]; then
+      _left="${_param#left=}"
+      _left="${_left%\}}"
+    elif [[ "${_param}" == "top="* ]]; then
+      _top="${_param#top=}"
+      _top="${_top%\}}"
+    elif [[ "${_param}" == "right="* ]]; then
+      _right="${_param#right=}"
+      _right="${_right%\}}"
+    elif [[ "${_param}" == "bottom="* ]]; then
+      _bottom="${_param#bottom=}"
+      _bottom="${_bottom%\}}"
+    else
+      _msg=(
+        "Unknown parameter '${_param}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  done
+  if [[ "${_left}" != "" ]]; then
+    _insets+=(
+      "${_left}"
+    )
+  fi
+  if [[ "${_top}" != "" ]]; then
+    _insets+=(
+      "${_top}"
+    )
+  fi
+  if [[ "${_right}" != "" ]]; then
+    _insets+=(
+      "${_right}"
+    )
+  fi
+  if [[ "${_bottom}" != "" ]]; then
+    _insets+=(
+      "${_bottom}"
+    )
+  fi
+}
+
+# NOTE:
+#   Parsing of the fields
+#   using '*_word' variables
+#   is hard-coded.
+#   Also the program implicitly
+#   assumes some properties
+#   will always be found
+#   on the same line,
+#   still it should come up
+#   if the program is run
+#   with 'strict mode' on.
+_dumpsys_json_encode() {
+  local \
+    _dumpsys="${1}" \
+    _dumpsys_window_windows=() \
+    _id \
+    _activity \
+    _activity_check \
+    _activity_record_opened \
+    _activity_record_unknown_id \
+    _activity_word \
+    _adjust \
+    _app_user \
+    _app_user_id \
+    _app_user_name \
+    _app_op \
+    _app_op_word \
+    _app_op_visibility \
+    _areas_restricted \
+    _areas_unrestricted \
+    _attrs_opened \
+    _base_layer \
+    _base_layer_word \
+    _behavior \
+    _behavior_word \
+    _client \
+    _client_word \
+    _draw_state \
+    _enter_animation_pending \
+    _fit_sides \
+    _fit_sides_word \
+    _fl \
+    _fl_word \
+    _flag \
+    _flags=() \
+    _fmt \
+    _force_hide_non_system_overlay_window \
+    _force_seamlessly_rotate \
+    _frames_display \
+    _frames_frame \
+    _frames_insets_change \
+    _frames_insets_changed \
+    _frames_last \
+    _frames_last_word \
+    _frames_parent \
+    _frames_surface \
+    _frames_surface_word \
+    _full_configuration_string \
+    _given_content_insets \
+    _given_content_insets_word \
+    _given_insets_pending \
+    _given_insets_pending_word \
+    _given_visible_insets \
+    _given_visible_insets_word \
+    _gr_index \
+    _gr_word_index \
+    _gr=() \
+    _has_surface \
+    _has_surface_word \
+    _have_frame \
+    _have_frame_word \
+    _hidden_while_suspended \
+    _if \
+    _ignoring_something \
+    _index \
+    _index_display \
+    _insets=() \
+    _insets_opened \
+    _insets_param \
+    _insets_params=() \
+    _insets_set \
+    _is_floating_layer \
+    _is_im_window \
+    _is_number \
+    _is_on_screen \
+    _is_ready_for_display \
+    _is_ready_for_display_word \
+    _is_visible \
+    _is_wallpaper \
+    _jq_opts=() \
+    _last_reported_configuration_string \
+    _last_freeze_duration \
+    _last_hidden \
+    _layout \
+    _layout_in_display_cutout_mode \
+    _layout_sequence_number_word \
+    _layout_sequence_number \
+    _legacy_policy_visibility_after_anim \
+    _line=() \
+    _line_index_last \
+    _line_string \
+    _or \
+    _owner_uid_word \
+    _owner_uid \
+    _package \
+    _package_word \
+    _params_for_rotation_opened \
+    _parent_hidden \
+    _permanently_hidden \
+    _pfl \
+    _pfl_word \
+    _policy_visibility \
+    _position_layout_word \
+    _position_layout \
+    _position \
+    _prepare_sync_seq_id \
+    _private_flags=() \
+    _provided_insets_object_type \
+    _provided_insets_object_type_word \
+    _receive_something \
+    _requested_width \
+    _requested_width_word \
+    _requested_height \
+    _requested_height_word \
+    _root_task_id \
+    _root_task_id_word \
+    _rotate_pending \
+    _session_id \
+    _session_id_word \
+    _session_object_type \
+    _session_unknown_id \
+    _show_for_all_users \
+    _show_for_all_users_word \
+    _sim=() \
+    _sim_index \
+    _sim_word \
+    _state_animator_id \
+    _state_animator_id_word \
+    _state_animator_owner \
+    _state_animator_owner_word \
+    _surface_id \
+    _surface_name \
+    _surface_name_word \
+    _surface_alpha \
+    _surface_layer \
+    _surface_shown \
+    _surface_rect \
+    _surface_transform=() \
+    _surface_transform_word \
+    _sub_layer \
+    _sub_layer_word \
+    _system_decor_rect \
+    _sysuil \
+    _token_activity_record_user \
+    _token_token \
+    _token_type \
+    _touchable_insets \
+    _touchable_insets_word \
+    _ty \
+    _uid \
+    _user_activity_timeout \
+    _user_id \
+    _user_unknown_id \
+    _user_word \
+    _view_obscured \
+    _view_obscured_word \
+    _view_visibility \
+    _view_visibility_word \
+    _vsysui \
+    _vsysui_word \
+    _msg=() \
+    _wanim \
+    _window \
+    _window_grouping_token \
+    _window_removal_allowed \
+    _window_removal_allowed_word \
+    _window_token_id \
+    _window_token_id_word \
+    _window_token_type \
+    _windows=() \
+    _windows_encode_opts=() \
+    _windows_jq_arg \
+    _word \
+    _word_index \
+    _word_index_end
+  _jq_opts+=(
+    -n
+  )
+  _is_number='^[0-9]+$'
+  _msg=(
+    "Encoding dumpsys output"
+    "in JSON format."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  mapfile \
+    -d \
+      $'\n' \
+    _dumpsys_window_windows < \
+    <(echo \
+        "${_dumpsys}")
+  _msg=(
+    "Dumpsys output is '${#_dumpsys_window_windows[@]}'"
+    "lines long."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _index=-1
+  _window=""
+  for _line_string in "${_dumpsys_window_windows[@]}"; do
+    _line=(
+      ${_line_string}
+    )
+    if [[ "${_line_string}" == "WINDOW MANAGER WINDOWS (dumpsys window windows)"* ]]; then
+      true
+    elif [[ "${_line_string}" == "  Window #"* ]]; then
+    else
+      _msg=(
+        "Window '${_index}',"
+        "unparsed line '${_line_string}'."
+      )
+      if [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      fi
+    fi
+  done
+  _windows_jq_arg="[$(
+    IFS=","; \
+    echo \
+      "${_windows[*]}")]"
+  _windows_encode_opts+=(
+    --argjson
+      "windows"
+        "${_windows_jq_arg}"
+  )
+  _msg=(
+    "Running jq with options"
+    "'${_jq_opts}"
+    "${_windows_encode_opts[@]}"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  jq \
+    "${_jq_opts[@]}" \
+    "${_windows_encode_opts[@]}" \
+    '$ARGS.named.windows'
+}
+
+_full_configuration_string_parse() {
+  local \
+    _full_configuration_string="${1}" \
+    _full_configuration=() \
+    _line=() \
+    _win_config_flag \
+    _word
+  _full_configuration=(
+    ${_full_configuration_string}
+  )
+  _win_config_flag="false"
+  # at the end.
+  # for _word in "${_line[@]}"; do
+  #   if [[ ]]; then
+  #   fi
+  # done
+  # true
+  # TODO:
+  #   this is an example string of the type it
+  #   gets given in input to this function
+  #   I dont need fully parsed right now so it can stay
+  #   a string as far as I'm concerned.
+  #   Feel free to do it yourself.
+  #   mFullConfiguration={
+  #     2.0
+  #     222mcc8mnc
+  #     [en_US,it_IT]
+  #     ldltr sw480dp
+  #     w1067dp
+  #     h480dp
+  #     72dpi
+  #     lrg
+  #     long
+  #     land
+  #     night
+  #     finger
+  #     -keyb/v/h
+  #     -nav/h
+  #     winConfig={
+  #       mBounds=Rect(0, 0 - 480, 216)
+  #       mAppBounds=Rect(0, 0 - 480, 216)
+  #       mMaxBounds=Rect(0, 0 - 480, 216)
+  #       mDisplayRotation=ROTATION_90
+  #       mWindowingMode=fullscreen
+  #       mDisplayWindowingMode=fullscreen
+  #       mActivityType=undefined
+  #       mAlwaysOnTop=undefined
+  #       mRotation=ROTATION_90}
+  #       as.16
+  #       s.6006
+  #       fontWeightAdjustment=0}
+}
+
+_activities_info() {
+  local \
+    _get_mode="${1}" \
+    _output_format="${2}" \
+    _strict_mode="${3}" \
+    _output_info \
+    _cmd=() \
+    _activities
+  "_${_get_mode}_get"
+}
+
+_auto_detect_mode() {
+  local \
+    _os \
+    _msg=()
+  _os="$(
+    uname \
+      -o)"
+  if [[ "${_os}" == "Android" ]]; then
+    _root_requirements
+    echo \
+      "root"
+  elif [[ "${_os}" == "GNU/Linux" ]]; then
+    _msg=(
+      "Not implemented."
+      "Something with 'xdotool'"
+      "for X.org environment"
+      "and ad-hoc support for"
+      "wayland compositors"
+      "need to be written"
+      "but really this is text"
+      "for a cross-platform"
+      "window manager, not the"
+      "Android one."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
+}
+
+_set_overrides() {
+  if [[ -v override_color ]]; then
+    color="${override_color}"
+  elif [[ -z "${color}" ]]; then
+    color="n"
+  fi
+  if [[ -v override_quiet ]]; then
+    quiet="${override_quiet}"
+  elif [[ -z "${quiet}" ]]; then
+    quiet="y"
+  fi
+  _set_override \
+    "get" \
+    "date" \
+    "$(_get_date_human)"
+  _set_override \
+    "get" \
+    "mode" \
+    "$(_auto_detect_mode)"
+  _set_override \
+    "output" \
+    "format" \
+    "json"
+  _set_override \
+    "strict" \
+    "mode" \
+    "n"
+}
+
+# Shows configuration options.
+_show_config() {
+  _msg_info "${app_name} configuration"
+  _msg_info "     Got activity at date:   ${get_date}"
+  _msg_info "                Info mode:   ${get_mode}"
+  _msg_info "            Output format:   ${output_format}"
+  _msg_info "              Strict mode:   ${strict_mode}"
+}
+
+# Show help usage, with an exit status.
+# $1: exit status number.
+_usage() {
+  local \
+    _usage_text
+  IFS='' \
+    read \
+      -r \
+      -d '' \
+      _usage_text << \
+        ENDUSAGETEXT || true
+
+Returns informations about currently opened windows.
+
+Usage:
+
+  ${app_name}
+    [options]
+
+  options:
+
+     -m <mode>      How to obtain windows information.
+                    It can be 'root' for obtaining them
+                    using 'dumpsys window windows'.
+                    Default: ${output_format}
+     -o <format>    Output format.
+                    It can be 'json' or 'plain'.
+                    Default: ${output_format}
+     -s             Strict mode. If enabled
+                    will stop if finds
+                    an unknown field.
+                    Default: ${strict_mode}
+
+     -h             This message.
+     -c             Enable color output.
+     -v             Enable verbose output
+
+ENDUSAGETEXT
+  _printf \
+    '%s\n' \
+    "${_usage_text}"
+  exit \
+    "${1}"
+}
+
+_globals
+_global_variables
+# shellcheck disable=SC2004
+# shellcheck disable=SC2034
+while \
+  getopts \
+    'm:o:scvh?' \
+    arg; do
+  case \
+    "${arg}" in
+    m)
+      override_get_mode="${OPTARG}" ;;
+    o)
+      override_output_format="${OPTARG}" ;;
+    s)
+      override_strict_mode="y" ;;
+    c)
+      override_color="y" ;;
+    v)
+      override_quiet="n" ;;
+    h|?)
+      _set_overrides
+      _usage \
+        0 ;;
+    *)
+      _msg=(
+        "Invalid argument '${arg}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      _set_overrides
+      _usage \
+        1 ;;
+  esac
+done
+shift \
+  $((
+    OPTIND - 1 \
+  ))
+_set_overrides
+app_opts=(
+  "${get_mode}"
+  "${output_format}"
+  "${strict_mode}"
+)
+_show_config
+_activities_info \
+  "${app_opts[@]}"
+
+# vim:set sw=2 sts=-1 et:
