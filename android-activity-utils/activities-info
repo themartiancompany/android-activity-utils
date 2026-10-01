@@ -106,6 +106,7 @@ _root_get() {
   _dumpsys="$(
     "${_cmd[@]}" || \
     true)"
+  echo "ciao"
   if [[ "${_dumpsys}" == "${_permissions_error_start[*]}"* && \
         "${_dumpsys}" == *"${_permissions_error_end[*]}" ]]; then
     _pid_word="${_dumpsys#${_permissions_error_start[*]}}"
