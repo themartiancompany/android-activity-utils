@@ -1771,7 +1771,7 @@ _dumpsys_json_encode() {
       if [[ "${_hist_opened}" == "true" ]]; then
         for _word in "${_line[@]:1}"; do
           if [[ "${_word}" == "label="* ]]; then
-            _task_description_label="${_listword#label=}"
+            _task_description_label="${_word#label=}"
           else
             _msg=(
               "Unknown parameter '${_word}'"
