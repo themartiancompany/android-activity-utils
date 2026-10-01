@@ -1840,7 +1840,6 @@ _dumpsys_json_encode() {
             break
           fi
         done
-        _msg
         _line_string="${_line_string#      taskDescription: label=\"${_sub_task_description_label}\" }"
         _line=(
           ${_line_string}
