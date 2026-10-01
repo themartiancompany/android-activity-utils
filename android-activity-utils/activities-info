@@ -1748,6 +1748,8 @@ _dumpsys_json_encode() {
       )
       _msg_info \
         "${_msg[*]}"
+      echo \
+        "${_line_string}"
     elif [[ "${_line_string}" == "    * Hist "* ]]; then
       _msg=(
         "Parsing task history line."
