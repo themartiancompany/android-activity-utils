@@ -948,12 +948,25 @@ _activity_json_get() {
     )
   fi
   if (( 0 < "${#_hist[@]}" )); then
+    _msg=(
+      "Detected activity history"
+      "structure, parsing."
+    )
+    _msg_info \
+      "${_msg[*]}"
     _activity_history_json_get
     _activity_encode_opts+=(
       --argjson
         "history"
           "${_activity_history_json}"
     )
+  else
+    _msg=(
+      "No activity history"
+      "structure detected."
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
   _activity="$(
     jq \
@@ -993,6 +1006,7 @@ _hist_json_get() {
           "taskDescription"
             "${_task_description_label}"
       )
+
     fi
     if [[ "${_hist_encode_opts[*]}" != "" ]]; then
       _hist_json="$(
