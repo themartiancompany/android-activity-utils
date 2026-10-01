@@ -908,6 +908,11 @@ _activity_json_get() {
   local \
     _msg=() \
     _activity_encode_opts=()
+  _activity_encode_opts+=(
+    --arg
+      "id"
+        "${_task_id}"
+  )
   _activity="$(
     jq \
       "${_jq_opts[@]}" \
@@ -917,6 +922,10 @@ _activity_json_get() {
   _activities+=(
     "${_activity}"
   )
+  if [[ "${quiet}" == "n" ]]; then
+    echo \
+      "${_activity}"
+  fi
 }
 
 _window_json_get() {
@@ -1771,15 +1780,27 @@ _dumpsys_json_encode() {
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
+      _index_display="$((
+        _index + 1))"
+      _msg=(
+        "Parsing task '${_index_display}' line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      if (( -1 < "${_index}" )); then
+        _activity_json_get
+      fi
+      _index="$((
+        _index + 1 ))"
+
       _task_string="${_line_string#  \* Task\{}"
       _task_string="${_task_string%\}}"
       _line=(
         ${_task_string}
       )
       _task_id="${_line[0]}"
-      for _word in "${_line[@]}"; do
-
-      done
+      # for _word in "${_line[@]}"; do
+      # done
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     else
       _msg=(
