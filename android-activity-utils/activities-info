@@ -1699,7 +1699,6 @@ _dumpsys_json_encode() {
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
       _hist=()
       _task_opened="true"
-      _hist_index=""
       _task_description_label=""
       _index_display="$((
         _index + 1))"
@@ -1709,8 +1708,11 @@ _dumpsys_json_encode() {
       _msg_info \
         "${_msg[*]}"
       if (( -1 < "${_index}" )); then
+        _hist_json_get \
+          "${_hist_index}"
         _activity_json_get
       fi
+      _hist_index=""
       _index="$((
         _index + 1 ))"
       _task_string="${_line_string#  \* Task\{}"
@@ -1761,8 +1763,8 @@ _dumpsys_json_encode() {
         )
         _msg_info \
           "${_msg[*]}"
-        _hist_json_get \
-          "${_hist_index}"
+        # _hist_json_get \
+        #   "${_hist_index}"
         _hist_index="${_hist_index_new}"
       fi
       _task_description_label=""
