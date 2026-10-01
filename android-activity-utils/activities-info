@@ -889,6 +889,21 @@ _provided_insets_json() {
     _insets
 }
 
+_activity_json_get() {
+  local \
+    _msg=() \
+    _activity_encode_opts=()
+  _activity="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_activity_encode_opts[@]}" \
+      '$ARGS.named'
+  )"
+  _activities+=(
+    "${_activity}"
+  )
+}
+
 _window_json_get() {
   local \
     _msg=() \
