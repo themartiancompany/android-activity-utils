@@ -1765,7 +1765,7 @@ _dumpsys_json_encode() {
     )
     if [[ "${_line_string}" == "ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)"* ]]; then
       true
-    elif [[ "${_line_string}" == "Display #"*" (activities from top to bottom):" ]]; then
+    elif [[ "${_line_string}" == "Display #"*" (activities from top to bottom):"* ]]; then
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  Window #"* ]]; then
