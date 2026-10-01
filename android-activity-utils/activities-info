@@ -164,746 +164,6 @@ _dumpsys_plain_encode() {
     "${_dumpsys}"
 }
 
-_session_json_get() {
-  local \
-    _session_id="${1}" \
-    _session_object_type="${2}" \
-    _unknown_session_id="${3}" \
-    _uid="${4}" \
-    _app_user_name="${5}" \
-    _client="${6}" \
-    _session_encode_opts=() \
-    _msg=()
-  _msg=(
-    "Getting session JSON."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _session_encode_opts+=(
-    --arg
-      "id"
-        "${_session_id}"
-    --arg
-      "object-type"
-        "${_session_object_type}"
-    --arg
-      "unknown-session-id"
-        "${_unknown_session_id}"
-        # "${_user_word}"
-    --arg
-      "app-uid":
-        "${_uid}"
-    --arg
-      "app-user-name":
-        "${_app_user_name}"
-    --arg
-      "mClient":
-        "${_client}"
-  )
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_session_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _session_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_session_encode_opts[@]}" \
-      '$ARGS.named')"
-}
-
-_insets_json_get() {
-  local \
-    _insets=() \
-    _insets_encode_opts=() \
-    _index \
-    _index_end \
-    _inset \
-    _key \
-    _msg=()
-  insets+=(
-    "$@"
-  )
-  _index_end=$((
-    ${#_insets[@]} - 1 ))
-  for _index \
-    in $(seq \
-           0 \
-           ${_index_end} ); do
-    _inset="${_insets["${_index}"]}"
-    if [[ "${_inset}" != "" ]]; then
-      if [[ "${_index}" == 0 ]]; then
-        _key="left"
-      elif [[ "${_index}" == 1 ]]; then
-        _key="top"
-      elif [[ "${_index}" == 2 ]]; then
-        _key="right"
-      elif [[ "${_index}" == 3 ]]; then
-        _key="bottom"
-      fi
-      _insets_encode_opts+=(
-        --arg
-          "${_key}" \
-            "${_inset}"
-      )
-    fi
-  done
-  _insets_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_insets_encode_opts[@]}" \
-      '$ARGS.named')"
-  _msg=(
-    "Insets JSON: ${_insets_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_attrs_json_get() {
-  local \
-    _position_layout="${1}" \
-    _position="${2}" \
-    _layout="${3}" \
-    _flags_json="${4}" \
-    _private_flags_json="${5}" \
-    _behaviour="${6}" \
-    _fit_sides="${7}" \
-    _adjust="${8}" \
-    _sysuil="${9}" \
-    _vsysui="${10}" \
-    _wanim="${11}" \
-    _or="${12}" \
-    _if="${13}" \
-    _user_activity_timeout="${14}" \
-    _sim_json="${15}" \
-    _provided_insets_json="${16}" \
-    _receive_something="${17}" \
-    _insets_set="${18}" \
-    _ignoring_something="${19}" \
-    _z_order="${20}" \
-    _attrs_encode_opts=() \
-    _msg=()
-  if [[ "${_position_layout}" == "" || \
-        "${_position}" == "" || \
-        "${_layout}" == "" ]]; then
-    _msg=(
-      "The arguments 'position layout',"
-      "'position' and 'layout' are mandatory."
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  _attrs_encode_opts+=(
-    --arg
-      "position-layout"
-        "${_position_layout}"
-    --arg
-      "position"
-        "${_position}"
-    --arg
-      "layout"
-        "${_layout}"
-  )
-  if [[ "${_flags_json}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --argjson
-        "fl"
-          "${_flags_json}"
-    )
-  fi
-  if [[ "${_private_flags_json}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --argjson
-        "pfl"
-          "${_private_flags_json}"
-    )
-  fi
-  if [[ "${_provided_insets_json}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --argjson
-        "providedInsets"
-          "${_provided_insets_json}"
-    )
-  fi
-  if [[ "${_behavior}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "bhv"
-          "${_behavior}"
-    )
-  fi
-  if [[ "${_fit_sides}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "fitSides"
-          "${_fit_sides}"
-    )
-  fi
-  if [[ "${_if}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "if"
-          "${_if}"
-    )
-  fi
-  if [[ "${_sim_json}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --argjson
-        "sim"
-          "${_sim_json}"
-    )
-  fi
-  if [[ "${_user_activity_timeout}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "userActivityTimeout"
-          "${_user_activity_timeout}"
-    )
-  fi
-  if [[ "${_adjust}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "adjust"
-          "${_adjust}"
-    )
-  fi
-  if [[ "${_or}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "or"
-          "${_or}"
-    )
-  fi
-  if [[ "${_sysuil}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "sysuil"
-          "${_sysuil}"
-    )
-  fi
-  if [[ "${_vsysui}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "vsysui"
-          "${_vsysui}"
-    )
-  fi
-  if [[ "${_wanim}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "wanim"
-          "${_wanim}"
-    )
-  fi
-  if [[ "${_receive_something}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "receive"
-          "true"
-    )
-  fi
-  if [[ "${_insets_set}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "insets"
-          "true"
-    )
-  fi
-  if [[ "${_ignoring_something}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "ignoring"
-          "true"
-    )
-  fi
-  if [[ "${_z_order}" != "" ]]; then
-    _attrs_encode_opts+=(
-      --arg
-        "z-order"
-          "true"
-    )
-  fi
-  _attrs_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_attrs_encode_opts[@]}" \
-      '$ARGS.named')"
-}
-
-_flags_json_get() {
-  local \
-    _flags=() \
-    _flags_jq_arg \
-    _flags_encode_opts=() \
-    _msg=()
-  _flags+=(
-    "$@"
-  )
-  _msg=(
-    "Getting flags JSON."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _flags_jq_arg="[$(
-    IFS=","; \
-    echo \
-      "${_flags[*]}")]"
-  _flags_encode_opts+=(
-    --argjson
-      "flags"
-        "${_flags_jq_arg}"
-  )
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_flags_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _flags_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_flags_encode_opts[@]}" \
-      '$ARGS.named.flags')"
-  _msg=(
-    "Flags JSON: ${_flags_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_private_flags_json_get() {
-  local \
-    _private_flags=() \
-    _private_flags_encode_opts=() \
-    _private_flags_jq_arg \
-    _msg=()
-  _private_flags+=(
-    "$@"
-  )
-  _msg=(
-    "Getting private flags JSON."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _private_flags_jq_arg="[$(
-    IFS=","; \
-    echo \
-      "${_private_flags[*]}")]"
-  _private_flags_encode_opts+=(
-    --argjson
-      "pflags"
-        "${_private_flags_jq_arg}"
-  )
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_private_flags_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _private_flags_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_private_flags_encode_opts[@]}" \
-      '$ARGS.named.pflags')"
-  _msg=(
-    "Private flags JSON: ${_private_flags_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_token_json_get() {
-  local \
-    _window_token_id="${1}" \
-    _token_type="${2}" \
-    _token_token="${3}" \
-    _token_activity_record_user="${4}" \
-    _activity_record_unknown_id="${5}" \
-    _window_token_type="${6}" \
-    _window_grouping_token="${7}" \
-    _msg=() \
-    _token_encode_opts=()
-  _msg=(
-    "Generating window token"
-    "JSON."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _token_encode_opts+=(
-    --arg
-      "id"
-        "${_window_token_id}"
-    --arg
-      "type"
-        "${_token_type}"
-    --arg
-      "window-grouping-token"
-        "${_window_grouping_token}"
-  )
-  if [[ "${_window_token_type}" != "" ]]; then
-    _token_encode_opts+=(
-      --arg
-        "object-type"
-          "${_window_token_type}"
-    )
-  else
-    _msg=(
-      "Why no window token type?"
-    )
-    _msg_error \
-      "${_msg[*]}" \
-      1
-  fi
-  if [[ "${_activity_record_unknown_id}" != "" ]]; then
-    _token_encode_opts+=(
-      --arg
-        "activity-record-unknown-id"
-          "${_activity_record_unknown_id}"
-    )
-  else
-    if [[ "${_window_token_type}" == "ActivityRecorder" ]]; then
-      _msg=(
-        "An 'ActivityRecorder' without the unknown"
-        "id."
-      )
-      _msg_warning \
-        "${_msg[*]}"
-    fi
-  fi
-  if [[ "${_token_token}" != "" ]]; then
-    _token_encode_opts+=(
-      --arg
-        "token"
-          "${_token_token}"
-    )
-  fi
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_token_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _token_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_token_encode_opts[@]}" \
-      '$ARGS.named')"
-  _msg=(
-    "Window token JSON: ${_token_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_frames_json_get() {
-  local \
-    _frames_display="${1}" \
-    _frames_frame="${2}" \
-    _frames_last="${3}" \
-    _frames_surface="${4}" \
-    _frames_insets_change="${5}" \
-    _frames_insets_changed="${6}" \
-    _frames_encode_opts=() \
-    _msg=()
-  _frames_encode_opts+=(
-    --arg
-      "display"
-        "${_frames_display}"
-    --arg
-      "frame"
-        "${_frames_frame}"
-    --arg
-      "last"
-        "${_frames_last}"
-    --arg
-      "surface"
-        "${_frames_surface}"
-  )
-  if [[ "${_frames_insets_change}" != "" ]]; then
-    _frames_encode_opts+=(
-      --arg
-        "insetsChange"
-          "${_frames_insets_change}"
-    )
-  fi
-  if [[ "${_frames_insets_changed}" != "" ]]; then
-    _frames_encode_opts+=(
-      --arg
-        "insetsChanged"
-          "${_frames_insets_changed}"
-    )
-  fi
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_frames_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _frames_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_frames_encode_opts[@]}" \
-      '$ARGS.named')"
-  _msg=(
-    "Window frames JSON: ${_frames_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_msurface_json_get() {
-  local \
-    _surface_name="${1}" \
-    _surface_id="${2}" \
-    _msg=() \
-    _msurface_encode_opts=()
-  if [[ "${_surface_id}" != "" ]]; then
-    _msurface_encode_opts+=(
-      --arg
-        "name"
-          "${_surface_name}"
-      --arg
-        "id"
-          "${_surface_id}"
-    )
-    _msg=(
-      "Running jq with options"
-      "'${_jq_opts[*]}"
-      "${_msurface_encode_opts[*]}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _msurface_json="$(
-      jq \
-        "${_jq_opts[@]}" \
-        "${_msurface_encode_opts[@]}" \
-        '$ARGS.named')"
-    _msg=(
-      "Window mSurface JSON: ${_msurface_json}"
-    )
-    _msg_info \
-      "${_msg[*]}"
-  fi
-}
-
-_surface_json_get() {
-  local \
-    _surface_shown="${1}" \
-    _surface_layer="${2}" \
-    _surface_alpha="${3}" \
-    _surface_rect="${4}" \
-    _surface_transform=() \
-    _msg=() \
-    _surface_encode_opts=()
-  _surface_transform+=(
-    "$@"
-  )
-  _surface_encode_opts+=(
-    --arg
-      "shown"
-        "${_surface_shown}"
-    --arg
-      "layer"
-        "${_surface_layer}"
-    --arg
-      "alpha"
-        "${_surface_alpha}"
-    --arg
-      "rect"
-        "${_surface_rect}"
-  )
-  if [[ "${_surface_transform[*]}" != "" ]]; then
-    _surface_encode_opts+=(
-      # In case one wanted
-      # to have also those encoded
-      # it's easier with this array.
-      --arg
-        "transform"
-          "(${_surface_transform[*]})"
-    )
-  fi
-  if [[ "${_surface_rect}" != "" ]]; then
-    _msg=(
-      "Running jq with options"
-      "'${_jq_opts[*]}"
-      "${_surface_encode_opts[*]}'."
-    )
-    _msg_info \
-      "${_msg[*]}"
-    _surface_json="$(
-      jq \
-        "${_jq_opts[@]}" \
-        "${_surface_encode_opts[@]}" \
-        '$ARGS.named')"
-    _msg=(
-      "State animator surface JSON: ${_surface_json}"
-    )
-  fi
-}
-
-_state_animator_json_get() {
-  local \
-    _state_animator_id="${1}" \
-    _state_animator_owner="${2}" \
-    _draw_state="${3}" \
-    _last_hidden="${4}" \
-    _enter_animation_pending="${5}" \
-    _system_decor_rect="${6}" \
-    _msurface_json="${7}" \
-    _surface_json="${8}" \
-    _msg=() \
-    _state_animator_encode_opts=()
-  _state_animator_encode_opts+=(
-    --arg
-      "id"
-        "${_state_animator_id}"
-    --arg
-      "owner"
-        "${_state_animator_owner}"
-  )
-  if [[ "${_draw_state}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --arg
-        "mDrawState"
-          "${_draw_state}"
-    )
-  fi
-  if [[ "${_last_hidden}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --arg
-        "mLastHidden"
-          "${_last_hidden}"
-    )
-  fi
-  if [[ "${_enter_animation_pending}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --arg
-        "mEnterAnimationPending"
-          "${_enter_animation_pending}"
-    )
-  fi
-  if [[ "${_system_decor_rect}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --arg
-        "mSystemDecorRect"
-          "${_system_decor_rect}"
-    )
-  fi
-  if [[ "${_msurface_json}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --argjson
-        "mSurface"
-          "${_msurface_json}"
-    )
-  fi
-  if [[ "${_surface_json}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --argjson
-        "Surface"
-          "${_surface_json}"
-    )
-  fi
-  _msg=(
-    "Running jq with options"
-    "'${_jq_opts[*]}"
-    "${_state_animator_encode_opts[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _state_animator_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_state_animator_encode_opts[@]}" \
-      '$ARGS.named')"
-  _msg=(
-    "Window State Animator JSON: ${_state_animator_json}"
-  )
-  _msg_info \
-    "${_msg[*]}"
-}
-
-_sim_json_get() {
-  local \
-    _sim=() \
-    _forward_navigation \
-    _param \
-    _sim_adjust \
-    _sim_state \
-    _sim_encode_opts=() \
-    _word \
-    _msg=()
-  _sim_adjust=""
-  _sim_state=""
-  _forward_navigation=""
-  for _word in "${_sim[@]}"; do
-    _param="${_word#\{}"
-    _param="${_param%\}}"
-    if [[ "${_param}" == "adjust="* ]]; then
-      _sim_adjust="${_param#adjust=}"
-    elif [[ "${_param}" == "state="* ]]; then
-      _sim_state="${_param#state=}"
-    elif [[ "${_param}" == "forwardNavigation" ]]; then
-      _forward_navigation="true"
-    else
-      _msg=(
-        "Unknown sim parameter"
-        "'${_param}'."
-      )
-      _msg_error \
-        "${_msg[*]}" \
-        1
-    fi
-  done
-  if [[ "${_sim_adjust}" != "" ]]; then
-    _sim_encode_opts+=(
-      --arg
-        "adjust"
-          "${_sim_adjust}"
-    )
-  fi
-  if [[ "${_sim_state}" != "" ]]; then
-    _sim_encode_opts+=(
-      --arg
-        "state"
-          "${_sim_state}"
-    )
-  fi
-  if [[ "${_forward_navigation}" != "" ]]; then
-    _sim_encode_opts+=(
-      --arg
-        "forwardNavigation"
-          "${_forward_navigation}"
-    )
-  fi
-  if [[ "${_sim_encode_opts[*]}" != "" ]]; then
-    _sim_json="$(
-     jq \
-      "${_jq_opts[@]}" \
-      "${_sim_encode_opts[@]}" \
-      '$ARGS.named')"
-  else
-    _msg=(
-      "Window has no 'soft input mode'"
-      "layout attributes."
-    )
-    _msg_info \
-      "${_msg[*]}"
-  fi
-}
-
-_provided_insets_json() {
-  local \
-    _insets
-}
-
 _activity_history_json_get() {
   local \
     _hist_jq_arg \
@@ -1006,7 +266,6 @@ _hist_json_get() {
           "taskDescription"
             "${_task_description_label}"
       )
-
     fi
     if [[ "${_hist_encode_opts[*]}" != "" ]]; then
       _hist_json="$(
@@ -1051,6 +310,80 @@ _hist_json_get() {
     _msg=(
       "No history index"
       "'_hist_index' selected,"
+      "skipping."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
+_hist_json_get() {
+  local \
+    _msg=() \
+    _sub_hist_encode_opts=()
+  if [[ "${_hist_index}" != "" ]]; then
+    _msg=(
+      "Generating JSON for sub-task history item"
+      "'${_sub_hist_index}'"
+      "of task '${_index}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    # _sub_hist_encode_opts+=(
+    #   --arg
+    #     "history-id"
+    #       "${_sub_hist_index}"
+    # )
+    if [[ "${_sub_task_description_label}" != "" ]]; then
+      _sub_hist_encode_opts+=(
+        --arg
+          "taskDescription"
+            "${_sub_task_description_label}"
+      )
+    fi
+    if [[ "${_sub_hist_encode_opts[*]}" != "" ]]; then
+      _sub_hist_json="$(
+        jq \
+          "${_jq_opts[@]}" \
+          "${_sub_hist_encode_opts[@]}" \
+          '$ARGS.named')"
+    else
+      _msg=(
+        "No sub-task activity history item"
+        "in queue."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    fi
+    if [[ "${_sub_hist_json}" != "" ]]; then
+      _sub_hist+=(
+        "${_sub_hist_json}"
+      )
+      _msg=(
+        "Generated task '${_index}'"
+        "sub-task history item '${_sub_hist_index}'"
+        "JSON:"
+      )
+      _msg_info \
+        "${_msg[*]}"
+      if [[ "${quiet}" == "n" ]]; then
+        echo \
+          "${_sub_hist_json}"
+      fi
+    elif [[ "${_sub_hist_json}" == "" && \
+            "${_sub_hist_encode_opts[*]}" != "" ]]; then
+      _msg=(
+        "Error generating sub-task"
+        "history JSON."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  else
+    _msg=(
+      "No sub-task history index"
+      "'_sub_hist_index' selected,"
       "skipping."
     )
     _msg_info \
@@ -1797,10 +1130,8 @@ _dumpsys_json_encode() {
       _msg_info \
         "${_msg[*]}"
       if (( -1 < "${_index}" )); then
-        # _sub_hist_json_get \
-        #   "${_sub_hist_index}"
-        _hist_json_get \
-          "${_hist_index}"
+        _sub_hist_json_get
+        _hist_json_get
         _activity_json_get
       fi
       _hist=()
