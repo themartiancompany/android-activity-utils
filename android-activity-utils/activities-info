@@ -1746,7 +1746,7 @@ _dumpsys_json_encode() {
       _msg_info \
         "${_msg[*]}"
       _hist_opened="true"
-      _hist_index_word="${_line[1]}"
+      _hist_index_word="${_line[2]}"
       echo "${_line_string}"
       echo "${_line[@]}"
       echo "${_line[*]}"
