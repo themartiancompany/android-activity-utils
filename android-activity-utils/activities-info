@@ -1586,7 +1586,8 @@ _dumpsys_json_encode() {
     _behavior_word \
     _client \
     _client_word \
-    _draw_state \
+    _display \
+    _draw_state \ # old
     _enter_animation_pending \
     _fit_sides \
     _fit_sides_word \
@@ -1763,6 +1764,9 @@ _dumpsys_json_encode() {
       ${_line_string}
     )
     if [[ "${_line_string}" == "ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)"* ]]; then
+      true
+    elif [[ "${_line_string}" == "Display #"*" (activities from top to bottom):" ]]; then
+      _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  Window #"* ]]; then
       true
