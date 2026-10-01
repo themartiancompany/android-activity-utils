@@ -982,6 +982,17 @@ _hist_json_get() {
       _hist+=(
         "${_hist_json}"
       )
+      _msg=(
+        "Generated task '${_index}'"
+        "history item '${_hist_index}'"
+        "JSON:"
+      )
+      _msg_info \
+        "${_msg[*]}"
+      if [[ "${quiet}" == "n" ]]; then
+        echo \
+          "${_hist_json}"
+      fi
     else
       _msg=(
         "Error generating task"
@@ -990,10 +1001,6 @@ _hist_json_get() {
       _msg_error \
         "${_msg[*]}" \
         1
-    fi
-    if [[ "${quiet}" == "n" ]]; then
-      echo \
-        "${_hist_json}"
     fi
   else
     _msg=(
