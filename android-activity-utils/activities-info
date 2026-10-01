@@ -916,6 +916,13 @@ _activity_json_get() {
       "task-id"
         "${_task_id}"
   )
+  if [[ "${_task_type}" != "" ]]; then
+    _activity_encode_opts+=(
+      --arg
+        "task-type"
+          "${_task_type}"
+    )
+  fi
   _activity="$(
     jq \
       "${_jq_opts[@]}" \
@@ -1475,6 +1482,7 @@ _values_clean() {
   _sysuil=""
   _task_id=""
   _task_object_id=""
+  _task_type=""
   _token_activity_record_user=""
   _token_token=""
   _token_type=""
@@ -1719,6 +1727,7 @@ _dumpsys_json_encode() {
     _sysuil \
     _task_id \
     _task_object_id \
+    _task_type \
     _task_string \
     _token_activity_record_user \
     _token_token \
@@ -1824,6 +1833,7 @@ _dumpsys_json_encode() {
           fi
         fi
       done
+      _values_clean
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     else
       _msg=(
