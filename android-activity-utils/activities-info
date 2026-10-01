@@ -1831,6 +1831,8 @@ _dumpsys_json_encode() {
             _task_description_label="${_line_string#      taskDescription: label=\"}"
             if [[ "${_task_description_label}" == *"\"" ]]; then
               _task_description_label="${_task_description_label%\"}"
+            else
+              _task_description_label="${_task_description_label%\" icon=*}"
             fi
             _msg=(
               "Got task description label"
@@ -1906,6 +1908,8 @@ _dumpsys_json_encode() {
             _sub_task_description_label="${_line_string#        taskDescription: label=\"}"
             if [[ "${_sub_task_description_label}" == *"\"" ]]; then
               _sub_task_description_label="${_sub_task_description_label%\"}"
+            else
+              _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
             fi
             _msg=(
               "Got sub-task description label"
