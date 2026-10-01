@@ -29,10 +29,21 @@ from in standard unix programs and environments.
 It includes:
 
 - `activity-launch`:
-    Launches Android activities programmatically according
-    to rules;
+
+   Launches Android activities programmatically according
+   to rules;
+
 - `activity-focused`:
-    Returns the name of the currently focused Android activity.
+
+   Returns the name of the currently focused Android activity.
+
+- `activities-info`:
+
+   Returns (some of) the output of `dumpsys activity activities`
+   in plain or JSON format. Used by the `windows-select` from
+   the Android window manager command-line program
+   [`android-wm`](
+     https://github.com/themartiancompany/android-wm).
     
 ## Installation
 
