@@ -102,10 +102,34 @@ _root_get() {
   _msg_info \
     "${_msg[*]}"
   _dumpsys="$(
-    su \
-      -c \
-      "${_cmd[*]}" || \
-      true)"
+    "${_cmd[@]}" || \
+    true)"
+  if [[ "${_dumpsys}" == "${_permissions_error_start[*]}"* && \
+        "${_dumpsys}" == *"${_permissions_error_end[*]}" ]]; then
+    _pid_word="${_dumpsys#${_permissions_error_start[*]}}"
+    _pid="${_pid_word%, uid=* ${_permissions_error_end[*]}}"
+    _uid="${_pid_word#${_pid}, uid=*}"
+    _msg=(
+      "User with uid '${_uid}'"
+      "has no permission to run"
+      "'dumpsys'. Consider running"
+      "'sudo"
+          "pm"
+            "grant"
+              "com.termux"
+              "android.permission.PACKAGE_USAGE_STATS'"
+      "to enable the termux terminal application user"
+      "to run some 'dumpsys activity activities'"
+      "without root permission."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _dumpsys="$(
+      su \
+        -c \
+        "${_cmd[*]}" || \
+        true)"
+  fi
   if [[ "${_dumpsys}" == "" ]]; then
     _msg=(
       "Error running '${_cmd[*]}'."
