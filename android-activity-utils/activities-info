@@ -66,6 +66,8 @@ _global_variables() {
 
 _root_get() {
   local \
+    _output_format="${1}" \
+    _strict_mode="${2}" \
     _dumpsys \
     _cmd \
     _msg=() \
@@ -1548,7 +1550,7 @@ _insets_parse() {
 _dumpsys_json_encode() {
   local \
     _dumpsys="${1}" \
-    _dumpsys_window_windows=() \
+    _dumpsys_activity_activities=() \
     _id \
     _activity \
     _activity_check \
@@ -1732,27 +1734,28 @@ _dumpsys_json_encode() {
   mapfile \
     -d \
       $'\n' \
-    _dumpsys_window_windows < \
+    _dumpsys_activity_activities < \
     <(echo \
         "${_dumpsys}")
   _msg=(
-    "Dumpsys output is '${#_dumpsys_window_windows[@]}'"
+    "Dumpsys output is '${#_dumpsys_activity_activities[@]}'"
     "lines long."
   )
   _msg_info \
     "${_msg[*]}"
   _index=-1
   _window=""
-  for _line_string in "${_dumpsys_window_windows[@]}"; do
+  for _line_string in "${_dumpsys_activity_activities[@]}"; do
     _line=(
       ${_line_string}
     )
-    if [[ "${_line_string}" == "WINDOW MANAGER WINDOWS (dumpsys window windows)"* ]]; then
+    if [[ "${_line_string}" == "WINDOW MANAGER WINDOWS (dumpsys activity activities)"* ]]; then
       true
     elif [[ "${_line_string}" == "  Window #"* ]]; then
+      true
     else
       _msg=(
-        "Window '${_index}',"
+        "Activity '${_index}',"
         "unparsed line '${_line_string}'."
       )
       if [[ "${_strict_mode}" == "n" ]]; then
@@ -1765,26 +1768,26 @@ _dumpsys_json_encode() {
       fi
     fi
   done
-  _windows_jq_arg="[$(
+  _activities_jq_arg="[$(
     IFS=","; \
     echo \
       "${_windows[*]}")]"
-  _windows_encode_opts+=(
+  _activities_encode_opts+=(
     --argjson
-      "windows"
-        "${_windows_jq_arg}"
+      "activities"
+        "${_activities_jq_arg}"
   )
   _msg=(
     "Running jq with options"
     "'${_jq_opts}"
-    "${_windows_encode_opts[@]}"
+    "${_activities_encode_opts[@]}"
   )
   _msg_info \
     "${_msg[*]}"
   jq \
     "${_jq_opts[@]}" \
-    "${_windows_encode_opts[@]}" \
-    '$ARGS.named.windows'
+    "${_activities_encode_opts[@]}" \
+    '$ARGS.named.activities'
 }
 
 _full_configuration_string_parse() {
@@ -1844,11 +1847,10 @@ _activities_info() {
   local \
     _get_mode="${1}" \
     _output_format="${2}" \
-    _strict_mode="${3}" \
-    _output_info \
-    _cmd=() \
-    _activities
-  "_${_get_mode}_get"
+    _strict_mode="${3}"
+  "_${_get_mode}_get" \
+    "${_output_format}" \
+    "${_strict_mode}"
 }
 
 _auto_detect_mode() {
