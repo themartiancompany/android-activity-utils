@@ -1777,6 +1777,34 @@ _dumpsys_json_encode() {
         _hist_index="${_hist_index_new}"
       fi
       _task_description_label=""
+    elif [[ "${_line_string}" == "      * Hist "* ]]; then
+      _msg=(
+        "Parsing sub-task history line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _sub_hist_opened="true"
+      _sub_hist_index_word="${_line[2]}"
+      echo "${_line_string}"
+      echo "${_line[@]}"
+      echo "${_line[*]}"
+      echo "${_sub_hist_index_word}"
+      _sub_hist_index_new="${_sub_hist_index_word#$'#'}"
+      _sub_hist_index_new="${_sub_hist_index_new%:}"
+      echo "${_sub_hist_index_new}"
+      if [[ "${_sub_hist_index}" != "${_sub_hist_index_new}" ]]; then
+        _msg=(
+          "Old sub-task history item index '${_sub_hist_index}'."
+          "New sub-task history item index '${_sub_hist_index_new}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+        # _hist_json_get \
+        #   "${_hist_index}"
+        _sub_hist_index="${_sub_hist_index_new}"
+      fi
+      _sub_task_description_label=""
+
     # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
@@ -1816,6 +1844,58 @@ _dumpsys_json_encode() {
             fi
           fi
         done
+      else
+        _msg=(
+          "The value of '_hist_opened'"
+          "is '${_hist_opened}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+      fi
+    elif [[ "${_line_string}" == "        taskDescription: "* ]]; then
+      _msg=(
+        "Parsing sub-task history item description label line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      _msg_info \
+        "${_line_string}"
+      if [[ "${_sub_hist_opened}" == "false" ]]; then
+        _msg=(
+          "How is sub-task history item field '${_sub_hist_opened}' not opened?"
+        )
+        _msg_info \
+          "${_msg_info[*]}"
+      elif [[ "${_sub_hist_opened}" == "true" ]]; then
+        for _word in "${_line[@]:1}"; do
+          if [[ "${_word}" == "label="* ]]; then
+            _sub_task_description_label="${_word#label=}"
+            _msg=(
+              "Got sub-task description label"
+              "'${_sub_task_description_label}'."
+            )
+          else
+            _msg=(
+              "Unknown parameter '${_word}'"
+              "for task history item object."
+            )
+            if [[ "${_strict_mode}" == "y" ]]; then
+              _msg_error \
+                "${_msg[*]}" \
+                1
+            elif [[ "${_strict_mode}" == "n" ]]; then
+              _msg_warning \
+                "${_msg[*]}"
+            fi
+          fi
+        done
+      else
+        _msg=(
+          "The value of '_sub_hist_opened'"
+          "is '${_sub_hist_opened}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
       fi
     else
       _msg=(
