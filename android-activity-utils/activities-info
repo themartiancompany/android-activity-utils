@@ -938,6 +938,37 @@ _activity_json_get() {
   fi
 }
 
+_hist_json_get() {
+  local \
+    _msg=() \
+    _hist_encode_opts=()
+  # _hist_encode_opts+=(
+  #   --arg
+  #     "history-id"
+  #       "${_hist_index}"
+  # )
+  if [[ "${_task_description_label}" != "" ]]; then
+    _hist_encode_opts+=(
+      --arg
+        "taskDescription"
+          "${_task_description_label}"
+    )
+  fi
+  _hist_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_hist_encode_opts[@]}" \
+      '$ARGS.named'
+  )"
+  # _hist+=(
+  #   "${_activity}"
+  # )
+  if [[ "${quiet}" == "n" ]]; then
+    echo \
+      "${_hist_json}"
+  fi
+}
+
 _window_json_get() {
   local \
     _msg=() \
@@ -1603,8 +1634,6 @@ _dumpsys_json_encode() {
     _attrs_opened \
     _base_layer \
     _base_layer_word \
-    _behavior \
-    _behavior_word \
     _client \
     _client_word \
     _display \
@@ -1619,6 +1648,7 @@ _dumpsys_json_encode() {
     _fmt \
     _force_hide_non_system_overlay_window \
     _force_seamlessly_rotate \
+    _hist=() \
     _hist_index \
     _line=() \
     _private_flags=() \
@@ -1667,6 +1697,7 @@ _dumpsys_json_encode() {
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
+      _hist=()
       _task_opened="true"
       _hist_index=""
       _index_display="$((
@@ -1710,30 +1741,34 @@ _dumpsys_json_encode() {
     elif [[ "${_line_string}" == "    * Hist: "* ]]; then
       _hist_index_new="${_line[1]#\#}"
       if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
+        if [[ "${_hist_index}" != "" ]]; then
+        _hist_json_get \
+          "${_hist_index}"
         _hist_opened="true"
+        _hist_index="${_hist_index_new}"
       fi
-      _hist_index_
     # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
-      for _word in "${_line[@]:1}"; do
-        if [[ "${_word}" == "label="* ]]; then
-          _task_description_label="${_listword#label=}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for Task object."
-          )
-          if [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
+      if [[ "${_hist_opened}" == "true" ]]; then
+        for _word in "${_line[@]:1}"; do
+          if [[ "${_word}" == "label="* ]]; then
+            _task_description_label="${_listword#label=}"
+          else
+            _msg=(
+              "Unknown parameter '${_word}'"
+              "for Task object."
+            )
+            if [[ "${_strict_mode}" == "y" ]]; then
+              _msg_error \
+                "${_msg[*]}" \
+                1
+            elif [[ "${_strict_mode}" == "n" ]]; then
+              _msg_warning \
+                "${_msg[*]}"
+            fi
           fi
-        fi
-      done
+        done
     else
       _msg=(
         "Activity '${_index}',"
