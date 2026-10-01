@@ -1617,120 +1617,12 @@ _dumpsys_json_encode() {
     _fmt \
     _force_hide_non_system_overlay_window \
     _force_seamlessly_rotate \
-    _frames_display \
-    _frames_frame \
-    _frames_insets_change \
-    _frames_insets_changed \
-    _frames_last \
-    _frames_last_word \
-    _frames_parent \
-    _frames_surface \
-    _frames_surface_word \
-    _full_configuration_string \
-    _given_content_insets \
-    _given_content_insets_word \
-    _given_insets_pending \
-    _given_insets_pending_word \
-    _given_visible_insets \
-    _given_visible_insets_word \
-    _gr_index \
-    _gr_word_index \
-    _gr=() \
-    _has_surface \
-    _has_surface_word \
-    _have_frame \
-    _have_frame_word \
-    _hidden_while_suspended \
-    _if \
-    _ignoring_something \
-    _index \
-    _index_display \
-    _insets=() \
-    _insets_opened \
-    _insets_param \
-    _insets_params=() \
-    _insets_set \
-    _is_floating_layer \
-    _is_im_window \
-    _is_number \
-    _is_on_screen \
-    _is_ready_for_display \
-    _is_ready_for_display_word \
-    _is_visible \
-    _is_wallpaper \
-    _jq_opts=() \
-    _last_reported_configuration_string \
-    _last_freeze_duration \
-    _last_hidden \
-    _layout \
-    _layout_in_display_cutout_mode \
-    _layout_sequence_number_word \
-    _layout_sequence_number \
-    _legacy_policy_visibility_after_anim \
     _line=() \
-    _line_index_last \
-    _line_string \
-    _or \
-    _owner_uid_word \
-    _owner_uid \
-    _package \
-    _package_word \
-    _params_for_rotation_opened \
-    _parent_hidden \
-    _permanently_hidden \
-    _pfl \
-    _pfl_word \
-    _policy_visibility \
-    _position_layout_word \
-    _position_layout \
-    _position \
-    _prepare_sync_seq_id \
     _private_flags=() \
-    _provided_insets_object_type \
-    _provided_insets_object_type_word \
-    _receive_something \
-    _requested_width \
-    _requested_width_word \
-    _requested_height \
-    _requested_height_word \
-    _root_task_id \
-    _root_task_id_word \
-    _rotate_pending \
-    _session_id \
-    _session_id_word \
-    _session_object_type \
-    _session_unknown_id \
-    _show_for_all_users \
-    _show_for_all_users_word \
-    _sim=() \
-    _sim_index \
-    _sim_word \
-    _state_animator_id \
-    _state_animator_id_word \
-    _state_animator_owner \
-    _state_animator_owner_word \
-    _surface_id \
-    _surface_name \
-    _surface_name_word \
-    _surface_alpha \
-    _surface_layer \
-    _surface_shown \
-    _surface_rect \
-    _surface_transform=() \
-    _surface_transform_word \
-    _sub_layer \
-    _sub_layer_word \
-    _system_decor_rect \
-    _sysuil \
     _task_id \
     _task_object_id \
     _task_type \
     _task_string \
-    _token_activity_record_user \
-    _token_token \
-    _token_type \
-    _touchable_insets \
-    _touchable_insets_word \
     _ty \
     _uid \
     _user_activity_timeout \
@@ -1832,6 +1724,25 @@ _dumpsys_json_encode() {
       done
       _values_clean
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
+    elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
+      for _word in "${_line[@]:1}"; do
+        if [[ "${_word}" == "label="* ]]; then
+          _task_description_label="${_listword#label=}"
+        else
+          _msg=(
+            "Unknown parameter '${_word}'"
+            "for Task object."
+          )
+          if [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
+              "${_msg[*]}"
+          fi
+        fi
+      done
     else
       _msg=(
         "Activity '${_index}',"
