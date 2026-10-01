@@ -1700,6 +1700,7 @@ _dumpsys_json_encode() {
       _hist=()
       _task_opened="true"
       _hist_index=""
+      _task_description_label=""
       _index_display="$((
         _index + 1))"
       _msg=(
