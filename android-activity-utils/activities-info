@@ -1762,7 +1762,7 @@ _dumpsys_json_encode() {
     _line=(
       ${_line_string}
     )
-    if [[ "${_line_string}" == "ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)" ]]; then
+    if [[ "${_line_string}" == "ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)\n" ]]; then
       true
     elif [[ "${_line_string}" == "  Window #"* ]]; then
       true
