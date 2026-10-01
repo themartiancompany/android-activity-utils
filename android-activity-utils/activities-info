@@ -1787,6 +1787,7 @@ _dumpsys_json_encode() {
             fi
           fi
         done
+      fi
     else
       _msg=(
         "Activity '${_index}',"
