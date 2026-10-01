@@ -1785,7 +1785,6 @@ _dumpsys_json_encode() {
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
-      _hist=()
       _task_opened="true"
       _hist_json=""
       _task_description_label=""
@@ -1804,6 +1803,7 @@ _dumpsys_json_encode() {
           "${_hist_index}"
         _activity_json_get
       fi
+      _hist=()
       _hist_index=""
       _sub_hist_index=""
       _index="$((
