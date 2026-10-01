@@ -942,6 +942,13 @@ _hist_json_get() {
   local \
     _msg=() \
     _hist_encode_opts=()
+  _msg=(
+    "Generating JSON for history item"
+    "'${_hist_index}'"
+    "of task '${_index}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
   # _hist_encode_opts+=(
   #   --arg
   #     "history-id"
