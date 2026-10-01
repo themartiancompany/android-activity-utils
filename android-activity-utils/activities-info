@@ -1741,6 +1741,13 @@ _dumpsys_json_encode() {
         fi
       done
       _values_clean
+    elif [[ "${_line_string}" == "    * Task{"* ]]; then
+      _subtask_opened="true"
+      _msg=(
+        "Parsing sub-task line for task '${_index_display}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
     elif [[ "${_line_string}" == "    * Hist "* ]]; then
       _msg=(
         "Parsing task history line."
