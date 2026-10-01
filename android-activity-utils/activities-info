@@ -111,6 +111,8 @@ _root_get() {
       "${_dumpsys}" |
       wc \
         -l)"
+  echo \
+    "${_dumpsys_lines}"
   if [[ "${_dumpsys}" == "${_permissions_error_start[*]}"* && \
         "${_dumpsys}" == *"${_permissions_error_end[*]}" ]]; then
     _pid_word="${_dumpsys#${_permissions_error_start[*]}}"
