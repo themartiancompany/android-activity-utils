@@ -942,7 +942,6 @@ _hist_json_get() {
   local \
     _msg=() \
     _hist_encode_opts=()
-  _hist_json=""
   _msg=(
     "Generating JSON for history item"
     "'${_hist_index}'"
@@ -1657,6 +1656,7 @@ _dumpsys_json_encode() {
     _force_hide_non_system_overlay_window \
     _force_seamlessly_rotate \
     _hist=() \
+    _hist_json \
     _hist_index \
     _line=() \
     _private_flags=() \
@@ -1713,6 +1713,7 @@ _dumpsys_json_encode() {
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
       _hist=()
       _task_opened="true"
+      _hist_json=""
       _task_description_label=""
       _sub_task_description_label=""
       _index_display="$((
