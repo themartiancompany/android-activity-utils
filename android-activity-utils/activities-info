@@ -1705,6 +1705,7 @@ _dumpsys_json_encode() {
       _hist=()
       _task_opened="true"
       _task_description_label=""
+      _sub_task_description_label=""
       _index_display="$((
         _index + 1))"
       _msg=(
