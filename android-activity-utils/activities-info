@@ -1789,6 +1789,10 @@ _dumpsys_json_encode() {
         for _word in "${_line[@]:1}"; do
           if [[ "${_word}" == "label="* ]]; then
             _task_description_label="${_word#label=}"
+            _msg=(
+              "Got task description label"
+              "'${_task_description_label}'."
+            )
           else
             _msg=(
               "Unknown parameter '${_word}'"
