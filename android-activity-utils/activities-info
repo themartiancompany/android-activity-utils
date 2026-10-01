@@ -1584,6 +1584,8 @@ _dumpsys_json_encode() {
     _dumpsys="${1}" \
     _dumpsys_activity_activities=() \
     _id \
+    _activities=() \
+    _activities_encode_opts=() \
     _activity \
     _activity_check \
     _activity_record_opened \
@@ -1617,35 +1619,15 @@ _dumpsys_json_encode() {
     _fmt \
     _force_hide_non_system_overlay_window \
     _force_seamlessly_rotate \
+    _hist_index \
     _line=() \
     _private_flags=() \
     _task_id \
     _task_object_id \
+    _task_opened \
     _task_type \
     _task_string \
-    _ty \
-    _uid \
-    _user_activity_timeout \
-    _user_id \
-    _user_unknown_id \
-    _user_word \
-    _view_obscured \
-    _view_obscured_word \
-    _view_visibility \
-    _view_visibility_word \
-    _vsysui \
-    _vsysui_word \
     _msg=() \
-    _wanim \
-    _window \
-    _window_grouping_token \
-    _window_removal_allowed \
-    _window_removal_allowed_word \
-    _window_token_id \
-    _window_token_id_word \
-    _window_token_type \
-    _windows=() \
-    _windows_encode_opts=() \
     _windows_jq_arg \
     _word \
     _word_index \
@@ -1685,6 +1667,8 @@ _dumpsys_json_encode() {
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
+      _task_opened="true"
+      _hist_index=""
       _index_display="$((
         _index + 1))"
       _msg=(
@@ -1723,6 +1707,13 @@ _dumpsys_json_encode() {
         fi
       done
       _values_clean
+    elif [[ "${_line_string}" == "    * Hist: "* ]]; then
+      _hist_index_new="${_line[1]#\#}"
+      if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
+        _hist_opened="true"
+      fi
+      _hist_index_
+    # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
       for _word in "${_line[@]:1}"; do
