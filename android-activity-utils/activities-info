@@ -910,7 +910,10 @@ _activity_json_get() {
     _activity_encode_opts=()
   _activity_encode_opts+=(
     --arg
-      "id"
+      "object-id"
+        "${_task_object_id}"
+    --arg
+      "task-id"
         "${_task_id}"
   )
   _activity="$(
@@ -1470,6 +1473,8 @@ _values_clean() {
   _surface_transform_word=""
   _system_decor_rect=""
   _sysuil=""
+  _task_id=""
+  _task_object_id=""
   _token_activity_record_user=""
   _token_token=""
   _token_type=""
@@ -1712,6 +1717,8 @@ _dumpsys_json_encode() {
     _sub_layer_word \
     _system_decor_rect \
     _sysuil \
+    _task_id \
+    _task_object_id \
     _task_string \
     _token_activity_record_user \
     _token_token \
@@ -1792,15 +1799,31 @@ _dumpsys_json_encode() {
       fi
       _index="$((
         _index + 1 ))"
-
       _task_string="${_line_string#  \* Task\{}"
       _task_string="${_task_string%\}}"
       _line=(
         ${_task_string}
       )
-      _task_id="${_line[0]}"
-      # for _word in "${_line[@]}"; do
-      # done
+      _task_object_id="${_line[0]}"
+      _task_id="${_line[0]#\#}"
+      for _word in "${_line[@]}"; do
+        if [[ "${_word}" == "type="* ]]; then
+          _task_type="${_word#type=}"
+        else
+          _msg=(
+            "Unknown param '${_word}'"
+            "for Task object."
+          )
+          if [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
+              "${_msg[*]}"
+          fi
+        fi
+      done
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     else
       _msg=(
