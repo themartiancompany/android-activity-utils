@@ -904,10 +904,34 @@ _provided_insets_json() {
     _insets
 }
 
+_activity_history_json_get() {
+  local \
+    _hist_jq_arg \
+    _activity_history_encode_opts=()
+  _hist_jq_arg="[$(
+    IFS=","; \
+    echo \
+      "${_hist[*]}")]"
+  for _json in "${_hist[@]}"; do
+    _activity_history_encode_opts+=(
+      --argjson
+        "history"
+          "${_hist_jq_arg}"
+    )
+  done
+  _activity_history_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_activity_history_encode_opts[@]}" \
+      '$ARGS.named.history')"
+}
+
 _activity_json_get() {
   local \
     _msg=() \
-    _activity_encode_opts=()
+    _activity_encode_opts=() \
+    _activity_history_json
+  _activity_history_json=""
   _activity_encode_opts+=(
     --arg
       "object-id"
@@ -923,7 +947,13 @@ _activity_json_get() {
           "${_task_type}"
     )
   fi
-  if [[ "${_hist[*]}" != "" ]]; then
+  if (( 0 < "${#_hist[@]}" )); then
+    _activity_history_json_get
+    _activity_encode_opts+=(
+      --argjson
+        "history"
+          "${_activity_history_json}"
+    )
   fi
   _activity="$(
     jq \
