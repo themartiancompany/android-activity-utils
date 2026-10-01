@@ -1756,8 +1756,8 @@ _dumpsys_json_encode() {
         _hist_json_get \
           "${_hist_index}"
         _hist_index="${_hist_index_new}"
-        _task_description_label=""
       fi
+      _task_description_label=""
     # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
