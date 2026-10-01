@@ -961,12 +961,20 @@ _hist_json_get() {
           "${_task_description_label}"
     )
   fi
-  _hist_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_hist_encode_opts[@]}" \
-      '$ARGS.named'
-  )"
+  if [[ "${_hist_encode_opts[*]}" != "" ]]; then
+    _hist_json="$(
+      jq \
+        "${_jq_opts[@]}" \
+        "${_hist_encode_opts[@]}" \
+        '$ARGS.named')"
+  else
+    _msg=(
+      "No activity history item"
+      "in queue."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
   # _hist+=(
   #   "${_activity}"
   # )
