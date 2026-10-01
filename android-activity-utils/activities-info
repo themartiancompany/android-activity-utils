@@ -1785,6 +1785,8 @@ _dumpsys_json_encode() {
       )
       _msg_info \
         "${_msg[*]}"
+      _msg_info \
+        "${_line_string}"
       if [[ "${_hist_opened}" == "false" ]]; then
         _msg=(
           "How is history item field '${_hist_opened}' not opened?"
