@@ -106,7 +106,11 @@ _root_get() {
   _dumpsys="$(
     "${_cmd[@]}" || \
     true)"
-  echo "ciao"
+  _dumpsys_lines="$(
+    echo \
+      "${_dumpsys}" |
+      wc \
+        -l)"
   if [[ "${_dumpsys}" == "${_permissions_error_start[*]}"* && \
         "${_dumpsys}" == *"${_permissions_error_end[*]}" ]]; then
     _pid_word="${_dumpsys#${_permissions_error_start[*]}}"
@@ -140,6 +144,12 @@ _root_get() {
     _msg_error \
       "${_msg[*]}" \
       1
+  else
+    _msg=(
+      "Obtained dumpsys."
+    )
+    _msg_info \
+      "${_msg[*]}"
   fi
   "_dumpsys_${_output_format}_encode" \
     "${_dumpsys}"
