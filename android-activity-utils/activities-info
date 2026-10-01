@@ -1845,8 +1845,8 @@ _dumpsys_json_encode() {
           ${_line_string}
         )
         for _word in "${_line[@]}"; do
-          echo \
-            "${_word}"
+          # echo \
+          #   "${_word}"
           if [[ "${_word}" == "icon="* ]]; then
             _task_icon="${_word#icon=}"
             _msg=(
