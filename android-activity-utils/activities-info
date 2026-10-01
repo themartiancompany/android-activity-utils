@@ -1750,6 +1750,11 @@ _dumpsys_json_encode() {
     # '    * Hist'
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
+      _msg=(
+        "Parsing history item task description label line."
+      )
+      _msg_info \
+        "${_msg[*]}"
       if [[ "${_hist_opened}" == "true" ]]; then
         for _word in "${_line[@]:1}"; do
           if [[ "${_word}" == "label="* ]]; then
