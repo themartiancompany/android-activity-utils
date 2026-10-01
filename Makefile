@@ -35,7 +35,7 @@ SCRIPT_FILES=$(wildcard android-activity-utils/*)
 
 all: build-man
 
-build-man:
+prepare:
 
 	git \
 	  submodule \
@@ -43,6 +43,11 @@ build-man:
 	    --init \
 	      "man" || \
 	true
+
+build-man:
+
+	make \
+	  prepare
 	mkdir \
 	  -p \
 	  "build/man"
@@ -65,6 +70,14 @@ shellcheck:
 
 install: install-scripts install-doc install-man
 
+install-doc:
+
+	install \
+	  -vDm644 \
+	  $(DOC_FILES) \
+	  -t \
+	  $(DOC_DIR)
+
 install-man:
 
 	make \
@@ -78,6 +91,10 @@ install-scripts:
 
 	install \
 	  -vDm755 \
+	  "$(_PROJECT)/activities-info" \
+	  "$(BIN_DIR)/activities-info"
+	install \
+	  -vDm755 \
 	  "$(_PROJECT)/activity-launch" \
 	  "$(BIN_DIR)/activity-launch"
 	install \
@@ -85,12 +102,14 @@ install-scripts:
 	  "$(_PROJECT)/activity-focused" \
 	  "$(BIN_DIR)/activity-focused"
 
-install-doc:
+uninstall: uninstall-scripts
 
-	install \
-	  -vDm644 \
-	  $(DOC_FILES) \
-	  -t \
-	  $(DOC_DIR)
+uninstall-scripts:
 
-.PHONY: check install install-doc install-man install-scripts shellcheck
+	rm \
+	  -vrf \
+	  "$(BIN_DIR)/activities-info" \
+	  "$(BIN_DIR)/activity-focused" \
+	  "$(BIN_DIR)/activity-launch"
+
+.PHONY: check install install-doc install-man install-scripts shellcheck uninstall uninstall-scripts
