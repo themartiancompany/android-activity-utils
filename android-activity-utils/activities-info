@@ -376,6 +376,13 @@ _hist_json_get() {
     #     "history-id"
     #       "${_hist_index}"
     # )
+    if [[ "${_task_process_name}" != "" ]]; then
+      _hist_encode_opts+=(
+        --arg
+          "processName"
+            "${_task_process_name}"
+      )
+    fi
     if [[ "${_task_package_name}" != "" ]]; then
       _hist_encode_opts+=(
         --arg
@@ -1005,7 +1012,7 @@ _dumpsys_json_encode() {
           _msg_info \
             "${_msg[*]}"
         elif [[ "${_word}" == "processName="* ]]; then
-          _task_package_name="${_word#packageName=}"
+          _task_process_name="${_word#processName=}"
         else
           _msg=(
             "Unknown parameter '${_word}'"
@@ -1037,7 +1044,7 @@ _dumpsys_json_encode() {
           _msg_info \
             "${_msg[*]}"
         elif [[ "${_word}" == "processName="* ]]; then
-          _sub_task_package_name="${_word#packageName=}"
+          _sub_task_process_name="${_word#processName=}"
         else
           _msg=(
             "Unknown parameter '${_word}'"
