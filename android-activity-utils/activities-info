@@ -284,7 +284,7 @@ _activity_json_get() {
     _msg_info \
       "${_msg[*]}"
     echo \
-      "${_activity}"
+      "${_activity_json}"
   fi
 }
 
