@@ -60,6 +60,7 @@ _global_variables() {
   output_format=""
   get_mode=""
   strict_mode=""
+  silent_mode=""
   color=""
   quiet=""
 }
@@ -68,6 +69,7 @@ _root_get() {
   local \
     _output_format="${1}" \
     _strict_mode="${2}" \
+    _silent_mode="${3}" \
     _dumpsys \
     _cmd \
     _msg=() \
@@ -896,7 +898,9 @@ _dumpsys_json_encode() {
             "Unknown param '${_word}'"
             "for Task object."
           )
-          if [[ "${_strict_mode}" == "y" ]]; then
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
             _msg_error \
               "${_msg[*]}" \
               1
@@ -933,7 +937,9 @@ _dumpsys_json_encode() {
             "Unknown param '${_word}'"
             "for sub-task object."
           )
-          if [[ "${_strict_mode}" == "y" ]]; then
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
             _msg_error \
               "${_msg[*]}" \
               1
@@ -1018,7 +1024,9 @@ _dumpsys_json_encode() {
             "Unknown parameter '${_word}'"
             "for package name line."
           )
-          if [[ "${_strict_mode}" == "y" ]]; then
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
             _msg_error \
               "${_msg[*]}" \
               1
@@ -1050,7 +1058,9 @@ _dumpsys_json_encode() {
             "Unknown parameter '${_word}'"
             "for package name line."
           )
-          if [[ "${_strict_mode}" == "y" ]]; then
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
             _msg_error \
               "${_msg[*]}" \
               1
@@ -1118,7 +1128,9 @@ _dumpsys_json_encode() {
               "Unknown parameter '${_word}'"
               "for task history item object."
             )
-            if [[ "${_strict_mode}" == "y" ]]; then
+            if [[ "${_silent_mode}" == "y" ]]; then
+              true
+            elif [[ "${_strict_mode}" == "y" ]]; then
               _msg_error \
                 "${_msg[*]}" \
                 1
@@ -1195,7 +1207,9 @@ _dumpsys_json_encode() {
               "Unknown parameter '${_word}'"
               "for task history item object."
             )
-            if [[ "${_strict_mode}" == "y" ]]; then
+            if [[ "${_silent_mode}" == "y" ]]; then
+              true
+            elif [[ "${_strict_mode}" == "y" ]]; then
               _msg_error \
                 "${_msg[*]}" \
                 1
@@ -1230,7 +1244,9 @@ _dumpsys_json_encode() {
       _msg+=(
         "unparsed line '${_line_string}'."
       )
-      if [[ "${_strict_mode}" == "n" ]]; then
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "n" ]]; then
         _msg_warning \
           "${_msg[*]}"
       elif [[ "${_strict_mode}" == "y" ]]; then
@@ -1319,10 +1335,12 @@ _activities_info() {
   local \
     _get_mode="${1}" \
     _output_format="${2}" \
-    _strict_mode="${3}"
+    _strict_mode="${3}" \
+    _silent_mode="${4}"
   "_${_get_mode}_get" \
     "${_output_format}" \
-    "${_strict_mode}"
+    "${_strict_mode}" \
+    "${_silent_mode}"
 }
 
 _auto_detect_mode() {
@@ -1425,6 +1443,15 @@ Usage:
                     will stop if finds
                     an unknown field.
                     Default: ${strict_mode}
+     -s             Silent mode. If enabled
+                    won't print warnings onto
+                    stderr. Printing warnings
+                    is a time-consuming operation
+                    so you may want to use this
+                    parameter when calling
+                    the program from other
+                    programs.
+                    Default: ${silent_mode}
 
      -h             This message.
      -c             Enable color output.
@@ -1444,7 +1471,7 @@ _global_variables
 # shellcheck disable=SC2034
 while \
   getopts \
-    'm:o:scvh?' \
+    'm:o:sqcvh?' \
     arg; do
   case \
     "${arg}" in
@@ -1454,6 +1481,8 @@ while \
       override_output_format="${OPTARG}" ;;
     s)
       override_strict_mode="y" ;;
+    q)
+      override_silent_mode="y" ;;
     c)
       override_color="y" ;;
     v)
@@ -1483,6 +1512,7 @@ app_opts=(
   "${get_mode}"
   "${output_format}"
   "${strict_mode}"
+  "${silent_mode}"
 )
 _show_config
 _activities_info \
