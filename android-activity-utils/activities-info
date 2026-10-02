@@ -789,6 +789,7 @@ _dumpsys_json_encode() {
   _msg_info \
     "${_msg[*]}"
   _index=-1
+  _sub_task_index=-1
   _hist_json=""
   _sub_activity_json=""
   _sub_hist_json=""
@@ -838,6 +839,7 @@ _dumpsys_json_encode() {
       _task_description_label=""
       _index="$((
         _index + 1 ))"
+      _sub_task_index=-1
       _task_string="${_line_string#  \* Task\{}"
       _task_string="${_task_string%\}}"
       _line=(
@@ -865,9 +867,16 @@ _dumpsys_json_encode() {
       done
       _values_clean
     elif [[ "${_line_string}" == "    * Task{"* ]]; then
+      _sub_task_index="$((
+        _sub_task_index + 1 ))"
+      _sub_task_string="${_line_string#    \* Task\{}"
+      _sub_task_string="${_sub_task_string%\}}"
+      _line=(
+        ${_task_string}
+      )
       _sub_task_opened="true"
       _msg=(
-        "Parsing sub-task line for task '${_index_display}'."
+        "Parsing sub-task line for task '${_sub_task_index}'."
       )
       _msg_info \
         "${_msg[*]}"
