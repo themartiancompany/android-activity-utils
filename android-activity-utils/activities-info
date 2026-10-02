@@ -865,6 +865,9 @@ _dumpsys_json_encode() {
       _sub_task_id=""
       _sub_task_object_id=""
       _sub_task_opened="false"
+      _sub_task_package_name=""
+      _sub_task_primary_color=""
+      _sub_task_process_name=""
       _sub_task_type=""
       _task_description_label=""
       _task_package_name=""
@@ -1001,7 +1004,7 @@ _dumpsys_json_encode() {
           )
           _msg_info \
             "${_msg[*]}"
-        if [[ "${_word}" == "processName="* ]]; then
+        elif [[ "${_word}" == "processName="* ]]; then
           _task_package_name="${_word#packageName=}"
         else
           _msg=(
@@ -1033,7 +1036,7 @@ _dumpsys_json_encode() {
           )
           _msg_info \
             "${_msg[*]}"
-        if [[ "${_word}" == "processName="* ]]; then
+        elif [[ "${_word}" == "processName="* ]]; then
           _sub_task_package_name="${_word#packageName=}"
         else
           _msg=(
