@@ -1423,7 +1423,7 @@ _usage() {
       _usage_text << \
         ENDUSAGETEXT || true
 
-Returns informations about currently opened windows.
+Returns informations about activities.
 
 Usage:
 
@@ -1443,7 +1443,7 @@ Usage:
                     will stop if finds
                     an unknown field.
                     Default: ${strict_mode}
-     -s             Silent mode. If enabled
+     -q             Silent mode. If enabled
                     won't print warnings onto
                     stderr. Printing warnings
                     is a time-consuming operation
