@@ -209,6 +209,7 @@ _activity_json_get() {
     _msg=() \
     _activity_encode_opts=() \
     _activity_history_json
+  _activity_json=""
   _activity_history_json=""
   _activity_encode_opts+=(
     --arg
@@ -257,7 +258,7 @@ _activity_json_get() {
     _activity_encode_opts+=(
       --argjson
         "tasks"
-          "${_sub_activity_history_json}"
+          "${_sub_activity_json}"
     )
   else
     _msg=(
@@ -267,16 +268,21 @@ _activity_json_get() {
     _msg_info \
       "${_msg[*]}"
   fi
-  _activity="$(
+  _activity_json="$(
     jq \
       "${_jq_opts[@]}" \
       "${_activity_encode_opts[@]}" \
       '$ARGS.named'
   )"
   _activities+=(
-    "${_activity}"
+    "${_activity_json}"
   )
   if [[ "${quiet}" == "n" ]]; then
+    _msg=(
+      "Generated activity JSON:"
+    )
+    _msg_info \
+      "${_msg[*]}"
     echo \
       "${_activity}"
   fi
@@ -338,18 +344,18 @@ _sub_activity_json_get() {
     _msg_info \
       "${_msg[*]}"
   fi
-  _sub_activity="$(
+  _sub_activity_json="$(
     jq \
       "${_jq_opts[@]}" \
       "${_sub_activity_encode_opts[@]}" \
       '$ARGS.named'
   )"
   _sub_activities+=(
-    "${_sub_activity}"
+    "${_sub_activity_json}"
   )
   if [[ "${quiet}" == "n" ]]; then
     echo \
-      "${_sub_activity}"
+      "${_sub_activity_json}"
   fi
 }
 
@@ -499,426 +505,6 @@ _sub_hist_json_get() {
     _msg_info \
       "${_msg[*]}"
   fi
-}
-
-_window_json_get() {
-  local \
-    _msg=() \
-    _attrs_json \
-    _attrs_json_get_args=() \
-    _frames_json \
-    _frames_json_get_args=() \
-    _flags_json \
-    _keep_clear_areas_json \
-    _keep_clear_areas_json_get_args=() \
-    _msurface_json \
-    _msurface_json_get_args=() \
-    _private_flags_json \
-    _provided_insets_json \
-    _session_json \
-    _session_json_get_args=() \
-    _sim_json \
-    _surface_json \
-    _surface_json_get_args=() \
-    _state_animator_json \
-    _state_animator_json_get_args=() \
-    _surface \
-    _surface_encode_opts=() \
-    _token_json \
-    _token_json_get_args=() \
-    _window_encode_opts=() \
-    _msg=()
-  _attrs_json=""
-  _frames_json=""
-  _msurface_json=""
-  _provided_insets_json=""
-  _session_json=""
-  _sim_json=""
-  _surface_json=""
-  _state_animator_json=""
-  _msg=(
-    "Encoding window object JSON."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _session_json_get_args+=(
-    "${_session_id}"
-    "${_session_object_type}"
-    "${_user_word}"
-    "${_uid}"
-    "${_app_user_name}"
-    "${_client}"
-  )
-  _session_json_get \
-    "${_session_json_get_args[@]}"
-  _flags_json_get \
-    "${_flags[@]}"
-  _private_flags_json_get \
-    "${_private_flags[@]}"
-  _sim_json_get \
-    "${_sim}"
-  _insets_json_get \
-    "${_insets[@]}"
-  # _provided_insets_json_get
-  _attrs_json_get_args+=(
-    "${_position_layout}"
-    "${_position}"
-    "${_layout}"
-    "${_flags_json}"
-    "${_private_flags_json}"
-    "${_behavior}"
-    "${_fit_sides}"
-    "${_adjust}"
-    "${_sysuil}"
-    "${_vsysui}"
-    "${_wanim}"
-    "${_or}"
-    "${_if}"
-    "${_user_activity_timeout}"
-    "${_sim_json}"
-    "${_provided_insets_json}"
-    "${_receive_something}"
-    "${_insets_set}"
-    "${_ignoring_something}"
-    "${_z_order}"
-  )
-  _msg=(
-    "Running '_attrs_json_get'"
-    "with arguments '${_attrs_json_get_args[*]}'."
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _attrs_json_get \
-    "${_attrs_json_get_args[@]}"
-  _token_json_get_args+=(
-    "${_window_token_id}"
-    "${_token_type}"
-    "${_token_token}"
-    "${_token_activity_record_user}"
-    "${_activity_record_unknown_id}"
-    "${_window_token_type}"
-    "${_window_grouping_token}"
-  )
-  _token_json_get \
-    "${_token_json_get_args[@]}"
-  _frames_json_get_args+=(
-    "${_frames_display}"
-    "${_frames_frame}"
-    "${_frames_last}"
-    "${_frames_surface}"
-    "${_frames_insets_change}"
-    "${_frames_insets_changed}"
-  )
-  _frames_json_get \
-    "${_frames_json_get_args[@]}"
-  _msurface_json_get_args+=(
-    "${_surface_name}"
-    "${_surface_id}"
-  )
-  _msurface_json_get \
-    "${_msurface_json_get_args[@]}"
-  _surface_json_get_args+=(
-    "${_surface_shown}"
-    "${_surface_layer}"
-    "${_surface_alpha}"
-    "${_surface_rect}"
-    "${_surface_transform[@]}"
-  )
-  _surface_json_get \
-    "${_surface_json_get_args[@]}"
-  _state_animator_json_get_args+=(
-    "${_state_animator_id}"
-    "${_state_animator_owner}"
-    "${_draw_state}"
-    "${_last_hidden}"
-    "${_enter_animation_pending}"
-    "${_system_decor_rect}"
-    "${_msurface_json}"
-    "${_surface_json}"
-  )
-  _state_animator_json_get \
-    "${_state_animator_json_get_args[@]}"
-  _window_encode_opts+=(
-    --arg
-      "id"
-        "${_id}"
-    --arg
-      "user-id"
-        "${_user_id}"
-    --arg
-      "activity"
-        "${_activity}"
-    --arg
-      "mDisplayId"
-        "${_display_id}"
-    --arg
-      "rootId"
-        "${_display_id}"
-    --argjson
-      "mAttrs"
-        "${_attrs_json}"
-    --argjson
-      "mSession"
-        "${_session_json}"
-    --argjson
-      "mToken"
-        "${_token_json}"
-    --arg
-      "mOwnerUid"
-        "${_owner_uid}"
-    --arg
-      "showForAllUsers"
-        "true"
-    --arg
-      "package"
-        "${_package}"
-    --arg
-      "appop"
-        "${_app_op}"
-    --arg
-      "w"
-        "${_requested_width}"
-    --arg
-      "h"
-        "${_requested_height}"
-    --arg
-      "mLayoutSeq"
-        "${_layout_sequence_number}"
-    --arg
-      "mBaseLayer"
-        "${_base_layer}"
-    --arg
-      "mSubLayer"
-        "${_sub_layer}"
-    --arg
-      "mViewVisibility"
-        "${_view_visibility}"
-    --arg
-      "mHaveFrame"
-        "${_have_frame}"
-    --arg
-      "mObscured"
-        "${_view_obscured}"
-    --arg
-      "mGivenContentInsets"
-        "${_given_content_insets}"
-    --arg
-      "mGivenVisibleInsets"
-        "${_given_visible_insets}"
-    --arg
-      "mFullConfiguration"
-        "${_full_configuration_string}"
-    --arg
-      "mLastReportedConfiguration"
-        "${_last_reported_configuration_string}"
-    --argjson
-      "Frames"
-        "${_frames_json}"
-  )
-  if [[ "${_state_animator_json}" != "" ]]; then
-    _state_animator_encode_opts+=(
-      --argjson
-        "WindowStateAnimator"
-          "${_state_animator_json}"
-    )
-  fi
-  if [[ "${_window_removal_allowed}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mWindowRemovalAllowed"
-          "${_window_removal_allowed}"
-    )
-  fi
-  if [[ "${_has_surface}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mHasSurface"
-          "${_has_surface}"
-    )
-  fi
-  if [[ "${_is_ready_for_display}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "isReadyForDisplay()"
-          "${_is_ready_for_display}"
-    )
-  fi
-  if [[ "${_touchable_insets}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mTouchableInsets"
-          "${_touchable_insets}"
-    )
-  fi
-  if [[ "${_given_insets_pending}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mGivenInsetsPending"
-          "${_given_insets_pending}"
-    )
-  fi
-  if [[ "${_touchable_region}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "touchable-region"
-          "${_touchable_region}"
-    )
-  fi
-  if [[ "${_last_freeze_duration}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mLastFreezeDuration"
-          "${_last_freeze_duration}"
-    )
-  fi
-  if [[ "${_force_seamlessly_rotate}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mForceSeamlesslyRotate"
-          "${_force_seamlessly_rotate}"
-    )
-  fi
-  if [[ "${_rotate_pending}" != "" ]]; then
-    _window_encode_opts+=(
-      --argjson
-        "seamlesslyRotate"
-          "{ \"pending\": \"${_rotate_pending}\"}"
-    )
-  fi
-  if [[ "${_is_on_screen}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "isOnScreen"
-          "${_is_on_screen}"
-    )
-  fi
-  if [[ "${_is_visible}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "isVisible"
-          "${_is_visible}"
-    )
-  fi
-  if [[ "${_prepare_sync_seq_id}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mPrepareSyncSeqId"
-          "${_prepare_sync_seq_id}"
-    )
-  fi
-  if [[ "${_is_floating_layer}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mIsFloatingLayer"
-          "${_is_floating_layer}"
-    )
-  fi
-  if [[ "${_is_im_window}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mIsImWindow"
-          "${_is_im_window}"
-    )
-  fi
-  if [[ "${_is_wallpaper}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mIsWallpaper"
-          "${_is_wallpaper}"
-    )
-  fi
-  if [[ "${_policy_visibility}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mPolicyVisibility"
-          "${_policy_visibility}"
-    )
-  fi
-  if [[ "${_legacy_policy_visibility_after_anim}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mLegacyPolicyVisibilityAfterAnim"
-          "${_legacy_policy_visibility_after_anim}"
-    )
-  fi
-  if [[ "${_parent_hidden}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "parentHidden"
-          "${_parent_hidden}"
-    )
-  fi
-  if [[ "${_permanently_hidden}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mPermanentlyHidden"
-          "${_permanently_hidden}"
-    )
-  fi
-  if [[ "${_hidden_while_suspended}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mHiddenWhileSuspended"
-          "${_permanently_hidden}"
-    )
-  fi
-  if [[ "${_force_hide_non_system_overlay_window}" != "" ]]; then
-    _window_encode_opts+=(
-      --arg
-        "mForceHideNonSystemOverlayWindow"
-          "${_force_hide_non_system_overlay_window}"
-    )
-  fi
-  if [[ "${_areas_restricted}" != "" ]]; then
-    _keep_clear_areas_encode_opts+=(
-      --arg
-        "restricted"
-          "${_areas_restricted}"
-    )
-  fi
-  if [[ "${_areas_unrestricted}" != "" ]]; then
-    _keep_clear_areas_encode_opts+=(
-      --arg
-        "unrestricted"
-          "${_areas_unrestricted}"
-    )
-  fi
-  if [[ "${_areas_restricted}" != "" || \
-        "${_areas_unrestricted}" != "" ]]; then
-    _keep_clear_areas_encode_opts+=(
-      '$ARGS.named'
-    )
-    _keep_clear_areas="$(
-      jq \
-        "${_jq_opts[@]}" \
-        "${_keep_clear_areas_encode_opts[@]}")"
-    _window_encode_opts+=(
-      --argjson
-        "keepClearAreas"
-          "${_keep_clear_areas}"
-    )
-  fi
-  _window_encode_opts+=(
-    '$ARGS.named'
-  )
-  _window="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_window_encode_opts[@]}")"
-  _msg=(
-    "Detected window ${_index},"
-    "extracted:"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  _windows+=(
-    "${_window}"
-  )
-  if [[ "${quiet}" == "n" ]]; then
-    echo \
-      "${_window}"
-  fi
-  _window=""
 }
 
 _values_clean() {
