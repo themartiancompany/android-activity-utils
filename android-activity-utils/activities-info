@@ -865,7 +865,7 @@ _dumpsys_json_encode() {
       done
       _values_clean
     elif [[ "${_line_string}" == "    * Task{"* ]]; then
-      _subtask_opened="true"
+      _sub_task_opened="true"
       _msg=(
         "Parsing sub-task line for task '${_index_display}'."
       )
@@ -1102,6 +1102,11 @@ _dumpsys_json_encode() {
       _msg=(
         "Activity '${_index}',"
       )
+      if [[ "${_hist_index}" != "" ]]; then
+        _msg=(
+          "sub-activity '${_sub_task_index}',"
+        )
+      fi
       if [[ "${_hist_index}" != "" ]]; then
         _msg+=(
         "task history '${_hist_index}',"
