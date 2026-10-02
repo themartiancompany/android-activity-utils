@@ -1218,6 +1218,7 @@ _dumpsys_json_encode() {
       _task_opened="true"
       _task_description_label=""
       _hist_json=""
+      _sub_activity_json=""
       _sub_hist_json=""
       _sub_task_description_label=""
       _sub_task_id=""
