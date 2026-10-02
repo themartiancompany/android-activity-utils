@@ -1102,7 +1102,7 @@ _dumpsys_json_encode() {
       _msg=(
         "Activity '${_index}',"
       )
-      if [[ "${_hist_index}" != "" ]]; then
+      if [[ "${_sub_task_opened}" == "true" ]]; then
         _msg=(
           "sub-activity '${_sub_task_index}',"
         )
