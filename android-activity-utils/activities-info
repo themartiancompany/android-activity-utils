@@ -288,15 +288,19 @@ _sub_activity_json_get() {
     _sub_activity_encode_opts=() \
     _sub_activity_history_json
   _sub_activity_history_json=""
-  _sub_activity_encode_opts+=(
-    --arg
-      "object-id"
-        "${_sub_task_object_id}"
-    --arg
-      "task-id"
-        "${_sub_task_id}"
-  )
-  if [[ "${_sub_task_id}" ]]; then
+  if [[ "${_sub_task_object_id}" != "" ]]; then
+    _sub_activity_encode_opts+=(
+      --arg
+        "object-id"
+          "${_sub_task_object_id}"
+    )
+  fi
+  if [[ "${_sub_task_id}" != "" ]]; then
+    _sub_activity_encode_opts+=(
+      --arg
+        "task-id"
+          "${_sub_task_id}"
+    )
   fi
   if [[ "${_task_type}" != "" ]]; then
     _sub_activity_encode_opts+=(
