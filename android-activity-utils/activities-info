@@ -966,30 +966,35 @@ _dumpsys_json_encode() {
     #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
     #        packageName=com.android.gallery3d processName=com.android.gallery3d'.
     elif [[ "${_line_string}" == "      packageName="* ]]; then
-        for _word in "${_line[@]:1}"; do
-          if [[ "${_word}" == "packageName="* ]]; then
-            _task_package_name="${_word#packageName=}"
-            _msg=(
-              "Got task package name"
-              "'${_task_package_name}'."
-            )
-            _msg_info \
+      _msg=(
+        "Parsing activity history item package name."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      for _word in "${_line[@]}"; do
+        if [[ "${_word}" == "packageName="* ]]; then
+          _task_package_name="${_word#packageName=}"
+          _msg=(
+            "Got task package name"
+            "'${_task_package_name}'."
+          )
+          _msg_info \
+            "${_msg[*]}"
+        else
+          _msg=(
+            "Unknown parameter '${_word}'"
+            "for package name line."
+          )
+          if [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
               "${_msg[*]}"
-          else
-            _msg=(
-              "Unknown parameter '${_word}'"
-              "for package name line."
-            )
-            if [[ "${_strict_mode}" == "y" ]]; then
-              _msg_error \
-                "${_msg[*]}" \
-                1
-            elif [[ "${_strict_mode}" == "n" ]]; then
-              _msg_warning \
-                "${_msg[*]}"
-            fi
           fi
-        done
+        fi
+      done
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
       _msg=(
         "Parsing history item task description label line."
