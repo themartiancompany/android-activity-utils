@@ -296,6 +296,8 @@ _sub_activity_json_get() {
       "task-id"
         "${_sub_task_id}"
   )
+  if [[ "${_sub_task_id}" ]]; then
+  fi
   if [[ "${_task_type}" != "" ]]; then
     _sub_activity_encode_opts+=(
       --arg
@@ -1155,11 +1157,12 @@ _dumpsys_json_encode() {
     _sub_hist_index \
     _sub_hist_json \
     _sub_task_description_label \
-    _sub_task_object_id \
-    _sub_task_opened \
+    _sub_task_id \
     _sub_task_icon \
     _sub_task_icon_filename \
     _sub_task_icon_resource \
+    _sub_task_object_id \
+    _sub_task_opened \
     _sub_task_primary_color \
     _sub_task_type \
     _task_description_label \
