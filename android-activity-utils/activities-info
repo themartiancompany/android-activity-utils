@@ -1236,7 +1236,7 @@ _dumpsys_json_encode() {
   _activities_jq_arg="[$(
     IFS=","; \
     echo \
-      "${_windows[*]}")]"
+      "${_activities[*]}")]"
   _activities_encode_opts+=(
     --argjson
       "activities"
