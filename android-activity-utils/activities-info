@@ -1175,10 +1175,13 @@ _dumpsys_json_encode() {
     _sub_hist_index \
     _sub_hist_json \
     _sub_task_description_label \
+    _sub_task_object_id \
+    _sub_task_opened \
     _sub_task_icon \
     _sub_task_icon_filename \
     _sub_task_icon_resource \
     _sub_task_primary_color \
+    _sub_task_type \
     _task_description_label \
     _task_id \
     _task_object_id \
@@ -1285,6 +1288,26 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       echo \
         "${_line_string}"
+      _sub_task_object_id="${_line[0]}"
+      _sub_task_id="${_line[1]#\#}"
+      for _word in "${_line[@]:2}"; do
+        if [[ "${_word}" == "type="* ]]; then
+          _sub_task_type="${_word#type=}"
+        else
+          _msg=(
+            "Unknown param '${_word}'"
+            "for sub-task object."
+          )
+          if [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
+              "${_msg[*]}"
+          fi
+        fi
+      done
     elif [[ "${_line_string}" == "    * Hist "* ]]; then
       _msg=(
         "Parsing task history line."
