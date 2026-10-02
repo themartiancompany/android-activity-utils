@@ -1216,10 +1216,13 @@ _dumpsys_json_encode() {
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
       _task_opened="true"
+      _task_description_label=""
       _hist_json=""
       _sub_hist_json=""
-      _task_description_label=""
       _sub_task_description_label=""
+      _sub_task_id=""
+      _sub_task_object_id=""
+      _sub_task
       _index_display="$((
         _index + 1))"
       _msg=(
