@@ -790,9 +790,14 @@ _dumpsys_json_encode() {
     "${_msg[*]}"
   _index=-1
   _hist_json=""
-  _sub_hist_json=""
-  _sub_task_opened=""
   _sub_activity_json=""
+  _sub_hist_json=""
+  _sub_task_description_label=""
+  _sub_task_id=""
+  _sub_task_object_id=""
+  _sub_task_opened=""
+  _sub_task_type=""
+  _task_description_label=""
   _window=""
   for _line_string in "${_dumpsys_activity_activities[@]}"; do
     _line_string="${_line_string%$'\n'}"
@@ -806,11 +811,6 @@ _dumpsys_json_encode() {
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
       _task_opened="true"
-      _task_description_label=""
-      _sub_task_description_label=""
-      _sub_task_id=""
-      _sub_task_object_id=""
-      _sub_task_type=""
       _index_display="$((
         _index + 1))"
       _msg=(
@@ -830,7 +830,12 @@ _dumpsys_json_encode() {
       _sub_activity_json=""
       _sub_hist=()
       _sub_hist_index=""
+      _sub_task_description_label=""
+      _sub_task_id=""
+      _sub_task_object_id=""
       _sub_task_opened="false"
+      _sub_task_type=""
+      _task_description_label=""
       _index="$((
         _index + 1 ))"
       _task_string="${_line_string#  \* Task\{}"
