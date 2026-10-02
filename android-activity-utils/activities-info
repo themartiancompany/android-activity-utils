@@ -1222,7 +1222,7 @@ _dumpsys_json_encode() {
       _sub_task_description_label=""
       _sub_task_id=""
       _sub_task_object_id=""
-      _sub_task
+      _sub_task_type=""
       _index_display="$((
         _index + 1))"
       _msg=(
