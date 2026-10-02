@@ -743,6 +743,7 @@ _dumpsys_json_encode() {
     _hist_json \
     _line=() \
     _private_flags=() \
+    _sub_activities=() \
     _sub_hist=() \
     _sub_hist_index \
     _sub_hist_json \
