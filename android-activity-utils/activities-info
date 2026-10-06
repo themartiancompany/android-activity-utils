@@ -1400,6 +1400,10 @@ _set_overrides() {
     "strict" \
     "mode" \
     "n"
+  _set_override \
+    "silent" \
+    "mode" \
+    "n"
 }
 
 # Shows configuration options.
