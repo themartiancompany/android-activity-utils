@@ -373,7 +373,8 @@ _sub_activity_json_get() {
       "${_sub_activity_encode_opts[@]}" \
       '$ARGS.named'
   )"
-  if [[ "${_sub_activity_json}" != "" ]]; then
+  if [[ "${_sub_activity_json}" != "" && \
+        "${_sub_activity_json}" != "{}"  ]]; then
     _sub_activities+=(
       "${_sub_activity_json}"
     )
