@@ -373,12 +373,14 @@ _sub_activity_json_get() {
       "${_sub_activity_encode_opts[@]}" \
       '$ARGS.named'
   )"
-  _sub_activities+=(
-    "${_sub_activity_json}"
-  )
-  if [[ "${quiet}" == "n" ]]; then
-    echo \
+  if [[ "${_sub_activity_json}" != "" ]]; then
+    _sub_activities+=(
       "${_sub_activity_json}"
+    )
+    if [[ "${quiet}" == "n" ]]; then
+      echo \
+        "${_sub_activity_json}"
+    fi
   fi
 }
 
