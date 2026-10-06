@@ -652,7 +652,6 @@ _values_clean() {
   _touchable_insets_word=""
   _touchable_region=""
   _touchable_region_word=""
-  _task_object_id=""
   _task_type=""
   _ty=""
   _uid=""
