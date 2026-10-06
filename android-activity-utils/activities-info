@@ -889,6 +889,11 @@ _dumpsys_json_encode() {
         ${_task_string}
       )
       _task_object_id="${_line[0]}"
+      _msg=(
+        "Got task object id '${_task_object_id}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
       _task_id="${_line[1]#\#}"
       for _word in "${_line[@]:2}"; do
         if [[ "${_word}" == "type="* ]]; then
