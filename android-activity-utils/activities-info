@@ -215,12 +215,23 @@ _activity_json_get() {
   _activity_history_json=""
   _activity_encode_opts+=(
     --arg
-      "object-id"
-        "${_task_object_id}"
-    --arg
       "task-id"
         "${_task_id}"
   )
+  if [[ "${_task_object_id}" != "" ]]; then
+    _activity_encode_opts+=(
+      --arg
+        "object-id"
+          "${_task_object_id}"
+    )
+  else
+    _msg=(
+      "This field should always be present."
+    )
+    _msg_error \
+      "${_msg[*]}" \
+      1
+  fi
   if [[ "${_task_type}" != "" ]]; then
     _activity_encode_opts+=(
       --arg
