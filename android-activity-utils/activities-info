@@ -210,7 +210,8 @@ _activity_json_get() {
   local \
     _msg=() \
     _activity_encode_opts=() \
-    _activity_history_json
+    _activity_history_json \
+    _sub_activity_jq_arg
   _activity_json=""
   _activity_history_json=""
   _activity_encode_opts+=(
@@ -273,10 +274,14 @@ _activity_json_get() {
     _msg_info \
       "${_msg[*]}"
     _sub_activity_json_get
+    _sub_activity_jq_arg="$(
+      IFS=","; \
+      echo \
+        "[${_sub_activities[*]}]")"
     _activity_encode_opts+=(
       --argjson
         "tasks"
-          "${_sub_activity_json}"
+          "${_sub_activity_jq_arg}"
     )
   else
     _msg=(
