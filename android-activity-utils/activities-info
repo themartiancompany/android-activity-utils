@@ -401,6 +401,13 @@ _hist_json_get() {
             "${_task_process_name}"
       )
     fi
+    if [[ "${_hist_object_id}" != "" ]]; then
+      _hist_encode_opts+=(
+        --arg
+          "object-id"
+            "${_hist_object_id}"
+      )
+    fi
     if [[ "${_task_package_name}" != "" ]]; then
       _hist_encode_opts+=(
         --arg
@@ -786,6 +793,7 @@ _dumpsys_json_encode() {
     _hist=() \
     _hist_index \
     _hist_json \
+    _hist_object_id \
     _line=() \
     _private_flags=() \
     _sub_activities=() \
@@ -841,6 +849,7 @@ _dumpsys_json_encode() {
   _index=-1
   _sub_task_index=-1
   _hist_json=""
+  _hist_object_id=""
   _sub_activity_json=""
   _sub_hist_json=""
   _sub_task_description_label=""
@@ -995,6 +1004,8 @@ _dumpsys_json_encode() {
         _hist_index="${_hist_index_new}"
       fi
       _task_description_label=""
+      _hist_object_id="${_line[3]}"
+      _hist_object_id="${_hist_object_id#ActivityRecord\{}"
     elif [[ "${_line_string}" == "      * Hist "* ]]; then
       _msg=(
         "Parsing sub-task history line."
