@@ -224,6 +224,11 @@ _activity_json_get() {
         "object-id"
           "${_task_object_id}"
     )
+    _msg=(
+      "Task object ID: '${_task_object_id}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
   else
     _msg=(
       "This field should always be present."
