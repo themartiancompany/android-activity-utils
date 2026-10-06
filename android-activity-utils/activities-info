@@ -277,7 +277,7 @@ _activity_json_get() {
     _sub_activity_jq_arg="$(
       IFS=","; \
       echo \
-        "[${_sub_activities[*]}]")"
+        "[${_sub_activity_jsonies[*]}]")"
     _activity_encode_opts+=(
       --argjson
         "tasks"
@@ -896,6 +896,7 @@ _dumpsys_json_encode() {
       _hist_json=""
       _hist=()
       _hist_index=""
+      _sub_activities=()
       _sub_activity_json=""
       _sub_hist=()
       _sub_hist_index=""
