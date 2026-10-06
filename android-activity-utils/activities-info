@@ -925,8 +925,10 @@ _dumpsys_json_encode() {
       )
       _msg_info \
         "${_msg[*]}"
-      echo \
-        "${_line_string}"
+      if [[ "${quiet}" == "n" ]]; then
+        echo \
+          "${_line_string}"
+      fi
       _sub_task_object_id="${_line[0]}"
       _sub_task_id="${_line[1]#\#}"
       for _word in "${_line[@]:2}"; do
