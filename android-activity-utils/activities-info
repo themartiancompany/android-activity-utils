@@ -498,14 +498,14 @@ _sub_hist_json_get() {
           "${_sub_hist_index}"
     )
     if [[ "${_sub_task_process_name}" != "" ]]; then
-      _hist_encode_opts+=(
+      _sub_hist_encode_opts+=(
         --arg
           "processName"
             "${_sub_task_process_name}"
       )
     fi
     if [[ "${_sub_task_package_name}" != "" ]]; then
-      _hist_encode_opts+=(
+      _sub_hist_encode_opts+=(
         --arg
           "packageName"
             "${_sub_task_package_name}"
@@ -931,7 +931,8 @@ _dumpsys_json_encode() {
       )
       _task_object_id="${_line[0]}"
       _msg=(
-        "Got task object id '${_task_object_id}'."
+        "Got task object id '${_task_object_id}'"
+        "for task '${_index}'."
       )
       _msg_info \
         "${_msg[*]}"
