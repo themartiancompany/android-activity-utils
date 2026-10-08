@@ -510,6 +510,14 @@ _sub_hist_json_get() {
           "packageName"
             "${_sub_task_package_name}"
       )
+    else
+      _msg=(
+        "Why no '${_sub_task_package_name}'"
+        "sub-task package name?"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
     fi
     if [[ "${_sub_task_description_label}" != "" ]]; then
       _sub_hist_encode_opts+=(
