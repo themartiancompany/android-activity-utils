@@ -248,7 +248,7 @@ _activity_json_get() {
   if [[ "${_task_visible}" != "" ]]; then
     _activity_encode_opts+=(
       --arg
-        "task-visible"
+        "visible"
           "${_task_visible}"
     )
   fi
@@ -343,6 +343,13 @@ _sub_activity_json_get() {
       --arg
         "task-id"
           "${_sub_task_id}"
+    )
+  fi
+  if [[ "${_sub_task_visible}" != "" ]]; then
+    _sub_activity_encode_opts+=(
+      --arg
+        "visible"
+          "${_sub_task_visible}"
     )
   fi
   if [[ "${_sub_task_created_by_organizer}" != "" ]]; then
