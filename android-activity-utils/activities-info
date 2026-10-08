@@ -1011,7 +1011,7 @@ _dumpsys_json_encode() {
       for _word in "${_line[@]:2}"; do
         if [[ "${_word}" == "type="* ]]; then
           _sub_task_type="${_word#type=}"
-        if [[ "${_word}" == "visible="* ]]; then
+        elif [[ "${_word}" == "visible="* ]]; then
           _sub_task_visible="${_word#visible=}"
         else
           _msg=(
