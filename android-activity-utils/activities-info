@@ -851,6 +851,7 @@ _dumpsys_json_encode() {
     _sub_task_package_name \
     _sub_task_primary_color \
     _sub_task_process_name \
+    _sub_task_string \
     _task_process_name \
     _sub_task_type \
     _task_description_label \
@@ -999,7 +1000,7 @@ _dumpsys_json_encode() {
       _sub_task_string="${_line_string#    \* Task\{}"
       _sub_task_string="${_sub_task_string%\}}"
       _line=(
-        ${_task_string}
+        ${_sub_task_string}
       )
       _sub_task_opened="true"
       _msg=(
