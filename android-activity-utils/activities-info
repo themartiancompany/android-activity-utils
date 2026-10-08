@@ -245,6 +245,13 @@ _activity_json_get() {
           "${_task_type}"
     )
   fi
+  if [[ "${_task_visible}" != "" ]]; then
+    _activity_encode_opts+=(
+      --arg
+        "task-visible"
+          "${_task_visible}"
+    )
+  fi
   if (( 0 < "${#_hist[@]}" )); then
     _msg=(
       "Detected activity history"
