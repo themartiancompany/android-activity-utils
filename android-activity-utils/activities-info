@@ -1088,7 +1088,7 @@ _dumpsys_json_encode() {
         "${_msg[*]}"
       for _word in "${_line[@]}"; do
         if [[ "${_word}" == "packageName="* ]]; then
-          _sub_task_package_name="${_word#packageName=}"
+          _task_package_name="${_word#packageName=}"
           _msg=(
             "Got task package name"
             "'${_task_package_name}'."
