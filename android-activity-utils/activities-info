@@ -416,6 +416,13 @@ _hist_json_get() {
             "${_task_process_name}"
       )
     fi
+    if [[ "${_task_created_by_organizer}" != "" ]]; then
+      _hist_encode_opts+=(
+        --arg
+          "mCreatedByOrganizer"
+            "${_task_created_by_organizer}"
+      )
+    fi
     if [[ "${_hist_object_id}" != "" ]]; then
       _hist_encode_opts+=(
         --arg
@@ -504,6 +511,13 @@ _sub_hist_json_get() {
         "history-id"
           "${_sub_hist_index}"
     )
+    if [[ "${_sub_task_created_by_organizer}" != "" ]]; then
+      _sub_hist_encode_opts+=(
+        --arg
+          "mCreatedByOrganizer"
+            "${_sub_task_created_by_organizer}"
+      )
+    fi
     if [[ "${_sub_task_process_name}" != "" ]]; then
       _sub_hist_encode_opts+=(
         --arg
@@ -826,6 +840,7 @@ _dumpsys_json_encode() {
     _sub_hist=() \
     _sub_hist_index \
     _sub_hist_json \
+    _sub_task_created_by_organizer \
     _sub_task_description_label \
     _sub_task_id \
     _sub_task_icon \
@@ -841,6 +856,7 @@ _dumpsys_json_encode() {
     _task_description_label \
     _task_id \
     _task_object_id \
+    _task_created_by_organizer \
     _task_opened \
     _task_package_name \
     _task_process_name \
@@ -879,6 +895,7 @@ _dumpsys_json_encode() {
   _hist_object_id=""
   _sub_activity_json=""
   _sub_hist_json=""
+  _sub_task_created_by_organizer=""
   _sub_task_description_label=""
   _sub_task_id=""
   _sub_task_object_id=""
@@ -886,6 +903,7 @@ _dumpsys_json_encode() {
   _sub_task_package_name=""
   _sub_task_process_name=""
   _sub_task_type=""
+  _task_created_by_organizer=""
   _task_description_label=""
   _task_package_name=""
   _task_process_name=""
@@ -922,6 +940,7 @@ _dumpsys_json_encode() {
       _sub_activity_json=""
       _sub_hist=()
       _sub_hist_index=""
+      _sub_task_created_by_organizer=""
       _sub_task_description_label=""
       _sub_task_id=""
       _sub_task_object_id=""
@@ -930,6 +949,7 @@ _dumpsys_json_encode() {
       _sub_task_primary_color=""
       _sub_task_process_name=""
       _sub_task_type=""
+      _task_created_by_organizer=""
       _task_description_label=""
       _task_package_name=""
       _index="$((
@@ -1039,6 +1059,70 @@ _dumpsys_json_encode() {
       _task_description_label=""
       _hist_object_id="${_line[3]}"
       _hist_object_id="${_hist_object_id#ActivityRecord\{}"
+    elif [[ "${_line_string}" == "    mCreatedByOrganizer="* ]]; then
+      _msg=(
+        "Checking if task is created by organizer line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      for _word in "${_line[@]}"; do
+        if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
+          _task_created_by_organizer="${_word#mCreatedByOrganizer=}"
+          _msg=(
+            "Got task created by organizer"
+            "'${_task_created_by_organizer}'."
+          )
+          _msg_info \
+            "${_msg[*]}"
+        else
+          _msg=(
+            "Unknown parameter '${_word}'"
+            "for package name line."
+          )
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
+              "${_msg[*]}"
+          fi
+        fi
+      done
+    elif [[ "${_line_string}" == "      mCreatedByOrganizer="* ]]; then
+      _msg=(
+        "Checking if sub-task is created by organizer line."
+      )
+      _msg_info \
+        "${_msg[*]}"
+      for _word in "${_line[@]}"; do
+        if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
+          _sub_task_created_by_organizer="${_word#mCreatedByOrganizer=}"
+          _msg=(
+            "Got sub-task created by organizer"
+            "'${_task_created_by_organizer}'."
+          )
+          _msg_info \
+            "${_msg[*]}"
+        else
+          _msg=(
+            "Unknown parameter '${_word}'"
+            "for package name line."
+          )
+          if [[ "${_silent_mode}" == "y" ]]; then
+            true
+          elif [[ "${_strict_mode}" == "y" ]]; then
+            _msg_error \
+              "${_msg[*]}" \
+              1
+          elif [[ "${_strict_mode}" == "n" ]]; then
+            _msg_warning \
+              "${_msg[*]}"
+          fi
+        fi
+      done
     elif [[ "${_line_string}" == "    packageName="* ]]; then
       _msg=(
         "Parsing activity history item package name."
