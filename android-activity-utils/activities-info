@@ -668,6 +668,7 @@ _values_clean() {
   _receive_something=""
   _sub_task_object_id=""
   _sub_task_type=""
+  _task_visible=""
   _token_activity_record_user=""
   _token_token=""
   _token_type=""
@@ -676,6 +677,8 @@ _values_clean() {
   _touchable_region=""
   _touchable_region_word=""
   _task_type=""
+  _task_string=""
+  _task_visible=""
   _ty=""
   _uid=""
   _user_activity_timeout=""
@@ -836,6 +839,7 @@ _dumpsys_json_encode() {
     _task_process_name \
     _task_type \
     _task_string \
+    _task_visible \
     _msg=() \
     _word \
     _word_index \
@@ -940,6 +944,8 @@ _dumpsys_json_encode() {
       for _word in "${_line[@]:2}"; do
         if [[ "${_word}" == "type="* ]]; then
           _task_type="${_word#type=}"
+        elif [[ "${_word}" == "visible="* ]]; then
+          _task_visible="${_word#visible=}"
         else
           _msg=(
             "Unknown param '${_word}'"
