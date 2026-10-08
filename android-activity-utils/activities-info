@@ -353,7 +353,7 @@ _sub_activity_json_get() {
     )
   fi
   if [[ "${_sub_task_created_by_organizer}" != "" ]]; then
-    _sub_hist_encode_opts+=(
+    _sub_activity_encode_opts+=(
       --arg
         "mCreatedByOrganizer"
           "${_sub_task_created_by_organizer}"
