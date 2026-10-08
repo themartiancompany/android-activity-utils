@@ -1082,7 +1082,7 @@ _dumpsys_json_encode() {
     #        packageName=com.android.gallery3d processName=com.android.gallery3d'.
     elif [[ "${_line_string}" == "      packageName="* ]]; then
       _msg=(
-        "Parsing sub-task activity history item package name."
+        "Parsing task activity history item package name."
       )
       _msg_info \
         "${_msg[*]}"
