@@ -1090,13 +1090,13 @@ _dumpsys_json_encode() {
         if [[ "${_word}" == "packageName="* ]]; then
           _sub_task_package_name="${_word#packageName=}"
           _msg=(
-            "Got sub-task package name"
-            "'${_sub_task_package_name}'."
+            "Got task package name"
+            "'${_task_package_name}'."
           )
           _msg_info \
             "${_msg[*]}"
         elif [[ "${_word}" == "processName="* ]]; then
-          _sub_task_process_name="${_word#processName=}"
+          _task_process_name="${_word#processName=}"
         else
           _msg=(
             "Unknown parameter '${_word}'"
