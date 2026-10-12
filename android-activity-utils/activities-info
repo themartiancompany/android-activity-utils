@@ -1385,6 +1385,16 @@ _current_focus_json_get() {
       echo \
         "${_current_focus_json}"
     fi
+  else
+    if [[ "${_output_fields[*]}" == "all" || \
+          " ${_output_fields[*]} " ==  *" mCurrentFocus "*  ]]; then
+      _msg=(
+        "Current focus JSON not generated."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
   fi
 }
 
