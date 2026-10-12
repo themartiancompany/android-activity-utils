@@ -1307,6 +1307,10 @@ _current_focus_line_parse() {
         _msg_info \
           "${_msg[*]}"
       fi
+    elif [[ ${_word#u} =~ $_is_number ]]; then
+      _window_focus_user="${_word}"
+    elif [[ ${_word} != "${_word%\}}" ]]; then
+      _window_focus_activity="${_word%\}}"
     else
       _msg=(
         "Unknown property '${_word}'"
@@ -1323,6 +1327,29 @@ _current_focus_line_parse() {
         1
     fi
   done
+}
+
+_current_focus_json_get() {
+  local \
+    _current_focus_encode_opts=()
+  _current_focus_encode_opts+=(
+    --arg
+      "object-id"
+        "${_focus_window_id}"
+    --arg
+      "object-type"
+        "${_focus_window_type}"
+    --arg
+      "android-user"
+        "${_focus_window_user}"
+    --arg
+      "activity"
+        "${_focus_window_activity}"
+  )
+  _current_focus_json="$(
+    jq \
+      "${_jq_opts[@]}" \
+      "${_current_focus_encode_opts}"
 }
 
 # NOTE:
@@ -1373,6 +1400,7 @@ _dumpsys_json_encode() {
     _hist_index \
     _hist_json \
     _hist_object_id \
+    _is_number \
     _line=() \
     _private_flags=() \
     _sub_activities=() \
@@ -1403,16 +1431,18 @@ _dumpsys_json_encode() {
     _task_type \
     _task_string \
     _task_visible \
+    _window_focus_activity \
     _window_focus_id \
     _window_focus_type \
+    _window_focus_user \
     _msg=() \
     _word \
     _word_index \
     _word_index_end
+  _is_number='^[0-9]+$'
   _jq_opts+=(
     -n
   )
-  _is_number='^[0-9]+$'
   _msg=(
     "Encoding dumpsys output"
     "in JSON format."
