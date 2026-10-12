@@ -27,11 +27,31 @@
 SHELL = bash
 _PROJECT=android-activity-utils
 PREFIX ?= /usr/local
-DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/android-activity-utils
+DOC_DIR=$(DESTDIR)$(PREFIX)/share/doc/$(_PROJECT)
 BIN_DIR=$(DESTDIR)$(PREFIX)/bin
 
-DOC_FILES=$(wildcard *.rst)
-SCRIPT_FILES=$(wildcard android-activity-utils/*)
+_INSTALL_FILE=\
+  install \
+    -vDm644
+_INSTALL_DIR=\
+  install \
+    -vdm755
+_INSTALL_EXE=\
+  install \
+    -vDm755
+_MAKE_EXE=\
+  chmod \
+    755
+_MAKE_LINK=\
+  ln \
+    -sv
+
+DOC_FILES=\
+  $(wildcard \
+      *.rst)
+SCRIPT_FILES=\
+  $(wildcard \
+      $(_PROJECT)/*)
 
 all: build-man
 
@@ -72,8 +92,7 @@ install: install-scripts install-doc install-man
 
 install-doc:
 
-	install \
-	  -vDm644 \
+	$(_INSTALL_FILE) \
 	  $(DOC_FILES) \
 	  -t \
 	  $(DOC_DIR)
@@ -89,16 +108,13 @@ install-man:
 
 install-scripts:
 
-	install \
-	  -vDm755 \
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/activities-info" \
 	  "$(BIN_DIR)/activities-info"
-	install \
-	  -vDm755 \
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/activity-launch" \
 	  "$(BIN_DIR)/activity-launch"
-	install \
-	  -vDm755 \
+	$(_INSTALL_EXE) \
 	  "$(_PROJECT)/activity-focused" \
 	  "$(BIN_DIR)/activity-focused"
 

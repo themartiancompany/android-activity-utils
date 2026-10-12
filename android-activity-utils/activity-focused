@@ -331,6 +331,7 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "     Got activity at date:   ${get_date}"
   _msg_info "                 Get mode:   ${get_mode}"
+  _msg_info "          Detailed output:   ${detailed_output}"
   _msg_info "            Output format:   ${output_format}"
   _msg_info "            Output fields:   ${output_fields[*]}"
 }
@@ -360,7 +361,8 @@ Usage:
      -m <method>
 
        Method to obtain activity name.
-       It can be 'root'.
+       It can be 'root', which calls uses
+       'dumpsys activity activities'.
        Default: ${get_mode}
 
      -o <output-format>
@@ -383,6 +385,10 @@ Usage:
        For output format 'json' it can only
        be 'all'.
        Default: ${output_fields[*]}
+
+     -d
+
+       Detailed output. By default 'dumpsys'
 
      -h
 
