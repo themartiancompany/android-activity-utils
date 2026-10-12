@@ -1336,24 +1336,47 @@ _current_focus_line_parse() {
 _current_focus_json_get() {
   local \
     _current_focus_encode_opts=()
-  _current_focus_encode_opts+=(
-    --arg
-      "object-id"
-        "${_window_focus_id}"
-    --arg
-      "object-type"
-        "${_window_focus_type}"
-    --arg
-      "android-user"
-        "${_window_focus_user}"
-    --arg
-      "activity"
-        "${_window_focus_activity}"
-  )
+  if [[ "${_window_focus_activity}" == "" ]]; then
+    _current_focus_encode_opts+=(
+      --arg
+        "activity"
+          "${_window_focus_activity}"
+    )
+  fi
+  if [[ "${_window_focus_id}" == "" ]]; then
+    _current_focus_encode_opts+=(
+      --arg
+        "object-id"
+          "${_window_focus_id}"
+    )
+  fi
+  if [[ "${_window_focus_type}" == "" ]]; then
+    _current_focus_encode_opts+=(
+      --arg
+        "object-type"
+          "${_window_focus_type}"
+    )
+  fi
+  if [[ "${_window_focus_user}" == "" ]]; then
+    _current_focus_encode_opts+=(
+      --arg
+        "android-user"
+          "${_window_focus_user}"
+    )
+  fi
   _current_focus_json="$(
     jq \
       "${_jq_opts[@]}" \
       "${_current_focus_encode_opts[@]}")"
+  _msg=(
+    "Generated current focus JSON:"
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if [[ "${quiet}" == "n" ]]; then
+    echo \
+      "${_current_focus_json}"
+  fi
 }
 
 # NOTE:
