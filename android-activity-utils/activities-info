@@ -1784,6 +1784,10 @@ while \
       override_strict_mode="y" ;;
     q)
       override_silent_mode="y" ;;
+    f)
+      output_field+=(
+        "${OPTARG}"
+      ) ;;
     c)
       override_color="y" ;;
     v)
@@ -1814,6 +1818,7 @@ app_opts=(
   "${output_format}"
   "${strict_mode}"
   "${silent_mode}"
+  "${output_fields}"
 )
 _show_config
 _activities_info \
