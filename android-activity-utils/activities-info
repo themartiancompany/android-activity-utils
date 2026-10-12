@@ -1577,6 +1577,11 @@ _dumpsys_json_encode() {
     elif [[ "${_line_string}" == "        taskDescription: "* ]]; then
       _sub_hist_item_description_line_parse
     elif [[ "${_line_string}" == "  mCurrentFocus="* ]]; then
+      _msg=(
+        "Yooooooooooooooooooooo"
+      )
+      _msg_info \
+        "${_msg[*]}"
       _current_focus_line_parse
     else
       _msg=(
