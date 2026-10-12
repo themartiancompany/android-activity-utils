@@ -63,6 +63,8 @@ _root_requirements() {
 _global_variables() {
   get_date=""
   get_mode=""
+  output_format=""
+  output_fields=()
   color=""
   quiet=""
 }
