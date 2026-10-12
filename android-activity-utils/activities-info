@@ -1402,7 +1402,7 @@ _current_focus_json_get() {
       jq \
         "${_jq_opts[@]}" \
         "${_current_focus_encode_opts[@]}" \
-        '$args.named')"
+        '$ARGS.named')"
     _msg=(
       "Generated current focus JSON:"
     )
