@@ -227,7 +227,7 @@ _root_get() {
     _object_id="${_line[0]}"
     _object_type="${_object_id#mCurrentFocus=}"
     _object_type="${_object_type%\{*}"
-    _object_id="${_object_id#mCurrentFocus=${_object_type}}"
+    _object_id="${_object_id#mCurrentFocus=${_object_type}\{}"
   fi
   if [[ " ${_output_fields[*]} " == *" android-user "* || \
         "${_output_fields[*]}" == "all" ]]; then
