@@ -602,12 +602,6 @@ _values_clean() {
   _activity_record_opened=""
   _activity_record_unknown_id=""
   _adjust=""
-  _app_op=""
-  _app_op_word=""
-  _app_op_visibility=""
-  _app_user=""
-  _app_user_id=""
-  _app_user_name=""
   _area_restricted=""
   _area_unrestricted=""
   _base_layer=""
@@ -1355,12 +1349,6 @@ _dumpsys_json_encode() {
     _activity_record_unknown_id \
     _activity_word \
     _adjust \
-    _app_user \
-    _app_user_id \
-    _app_user_name \
-    _app_op \
-    _app_op_word \
-    _app_op_visibility \
     _areas_restricted \
     _areas_unrestricted \
     _attrs_opened \
@@ -1368,6 +1356,7 @@ _dumpsys_json_encode() {
     _base_layer_word \
     _client \
     _client_word \
+    _current_focus_json \
     _display \
     _draw_state \
     _enter_animation_pending \
