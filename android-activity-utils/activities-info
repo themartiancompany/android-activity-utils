@@ -947,7 +947,7 @@ _hist_line_parse() {
   _hist_object_id="${_hist_object_id#ActivityRecord\{}"
   _hist_object_user="${_line[4]}"
   _hist_object_activity="${_line[5]}"
-  _hist_object_activity="${_hist_object_actiivity%\}}"
+  _hist_object_activity="${_hist_object_activity%\}}"
   # _line=(
   #   "${_line[@]:3}"
   # )
