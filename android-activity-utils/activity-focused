@@ -223,7 +223,7 @@ _global_variables
 # shellcheck disable=SC2034
 while \
   getopts \
-    'm:a:cvh?' \
+    'm:a:o:f:cvh?' \
     arg; do
   case \
     "${arg}" in
@@ -231,6 +231,12 @@ while \
       override_get_mode="${OPTARG}" ;;
     a)
       override_sdk_version="${OPTARG}" ;;
+    o)
+      override_output_format="${OPTARG}" ;;
+    f)
+      output_fields+=(
+        "${OPTARG}"
+      ) ;;
     c)
       override_color="y" ;;
     v)
