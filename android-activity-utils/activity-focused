@@ -42,13 +42,21 @@ source \
   "${_crash_bash}"
 
 _root_requirements() {
+  local \
+    _os
+  _os="$(
+    uname \
+      -o)"
   _check_cmd \
     "awk" \
     "gawk"
   _check_cmd \
     "grep"
-  _check_cmd \
-    "su"
+  if [[ "${_os}" == "Android" ]]; then
+    _check_cmd \
+      "su" \
+      "sudo"
+  fi
 }
 
 # shellcheck disable=SC2034
@@ -89,11 +97,11 @@ _root_get() {
       "${_cmd[*]}")"
   _activity="$(
     echo \
-      "${_activities}" | \
+      "${_activities}" |
       grep \
-        "mCurrentFocus" | \
+        "mCurrentFocus" |
         awk \
-          '{print $3}' | \
+          '{print $3}' |
           awk \
             -F \
               '}' \
@@ -152,6 +160,8 @@ _set_overrides() {
     "get" \
     "mode" \
     "$(_auto_detect_mode)"
+  _output_format_auto_detect
+  _output_fields_auto_detect
 }
 
 # Shows configuration options.
@@ -159,12 +169,15 @@ _show_config() {
   _msg_info "${app_name} configuration"
   _msg_info "     Got activity at date:   ${get_date}"
   _msg_info "                 Get mode:   ${get_mode}"
+  _msg_info "            Output format:   ${output_format}"
+  _msg_info "            Output fields:   ${output_fields[*]}"
 }
 
 # Show help usage, with an exit status.
 # $1: exit status number.
 _usage() {
   local \
+    _exit_code="${1}" \
     _usage_text
   IFS='' \
     read \
@@ -185,6 +198,12 @@ Usage:
      -m <method>          Method to obtain activity name.
                           It can be 'root'.
                           Default: ${get_mode}
+     -o <output-format>   It can be 'plain' or 'json'.
+                          Default: ${output_format}
+     -f <output-field>    It can be 'activity-name',
+                          'all', 'object-id',
+                          'object-type' or 'android-user'.
+                          Default: ${output_fields[*]}
 
      -h                   This message.
      -c                   Enable color output.
@@ -195,7 +214,7 @@ ENDUSAGETEXT
     '%s\n' \
     "${_usage_text}"
   exit \
-    "${1}"
+    "${_exit_code}"
 }
 
 _globals
