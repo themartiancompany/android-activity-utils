@@ -161,7 +161,8 @@ _root_get() {
       "${_msg[*]}"
   fi
   "_dumpsys_${_output_format}_encode" \
-    "${_dumpsys}"
+    "${_dumpsys}" \
+    "${_output_fields[@]}"
 }
 
 _dumpsys_plain_encode() {
@@ -1371,6 +1372,7 @@ _current_focus_json_get() {
 _dumpsys_json_encode() {
   local \
     _dumpsys="${1}" \
+    _output_fields=() \
     _dumpsys_activity_activities=() \
     _id \
     _activities=() \
@@ -1444,6 +1446,11 @@ _dumpsys_json_encode() {
     _word \
     _word_index \
     _word_index_end
+  shift \
+    1
+  _output_fields+=(
+    "$@"
+  )
   _is_number='^[0-9]+$'
   _jq_opts+=(
     -n
@@ -1640,6 +1647,8 @@ _activities_info() {
     _strict_mode="${3}" \
     _silent_mode="${4}" \
     _output_fields=() 
+  shift \
+    4
   _output_fields+=(
     "$@"
   )
@@ -1807,7 +1816,7 @@ while \
     q)
       override_silent_mode="y" ;;
     f)
-      output_field+=(
+      output_fields+=(
         "${OPTARG}"
       ) ;;
     c)
@@ -1840,7 +1849,7 @@ app_opts=(
   "${output_format}"
   "${strict_mode}"
   "${silent_mode}"
-  "${output_fields}"
+  "${output_fields[@]}"
 )
 _show_config
 _activities_info \
