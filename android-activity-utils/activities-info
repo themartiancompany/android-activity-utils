@@ -76,6 +76,8 @@ _root_get() {
     _cmd \
     _msg=() \
     _sdk
+  shift \
+    3
   _output_fields+=(
     "$@"
   )
