@@ -264,11 +264,11 @@ _output_fields_auto_detect() {
     _msg=()
   if [[ "${output_fields[*]}" == "" ]]; then
     if [[ "${output_format}" == "plain" ]]; then
-      _output_fields=(
+      output_fields=(
         "activity"
       )
     elif [[ "${output_format}" == "json" ]]; then
-      _output_fields=(
+      output_fields=(
         "all"
       )
     else
