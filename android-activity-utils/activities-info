@@ -1362,28 +1362,28 @@ _current_focus_json_get() {
   )
   _msg_info \
     "${_msg[*]}"
-  if [[ "${_window_focus_activity}" == "" ]]; then
+  if [[ "${_window_focus_activity}" != "" ]]; then
     _current_focus_encode_opts+=(
       --arg
         "activity"
           "${_window_focus_activity}"
     )
   fi
-  if [[ "${_window_focus_id}" == "" ]]; then
+  if [[ "${_window_focus_id}" != "" ]]; then
     _current_focus_encode_opts+=(
       --arg
         "object-id"
           "${_window_focus_id}"
     )
   fi
-  if [[ "${_window_focus_type}" == "" ]]; then
+  if [[ "${_window_focus_type}" != "" ]]; then
     _current_focus_encode_opts+=(
       --arg
         "object-type"
           "${_window_focus_type}"
     )
   fi
-  if [[ "${_window_focus_user}" == "" ]]; then
+  if [[ "${_window_focus_user}" != "" ]]; then
     _current_focus_encode_opts+=(
       --arg
         "android-user"
