@@ -931,6 +931,9 @@ _hist_line_parse() {
   _task_description_label=""
   _hist_object_id="${_line[3]}"
   _hist_object_id="${_hist_object_id#ActivityRecord\{}"
+  # _line=(
+  #   "${_line[@]:3}"
+  # )
 }
 
 _task_created_by_organizer_line_parse() {
