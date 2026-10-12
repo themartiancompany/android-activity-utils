@@ -1502,7 +1502,9 @@ _dumpsys_json_encode() {
     _hist=() \
     _hist_index \
     _hist_json \
+    _hist_object_activity \
     _hist_object_id \
+    _hist_object_user \
     _is_number \
     _line=() \
     _private_flags=() \
@@ -1572,7 +1574,9 @@ _dumpsys_json_encode() {
   _index=-1
   _sub_task_index=-1
   _hist_json=""
+  _hist_object_activity=""
   _hist_object_id=""
+  _hist_object_user=""
   _sub_activity_json=""
   _sub_hist_json=""
   _sub_task_created_by_organizer=""
