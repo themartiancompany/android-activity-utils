@@ -1353,7 +1353,7 @@ _current_focus_json_get() {
   _current_focus_json="$(
     jq \
       "${_jq_opts[@]}" \
-      "${_current_focus_encode_opts}")"
+      "${_current_focus_encode_opts[@]}")"
 }
 
 # NOTE:
