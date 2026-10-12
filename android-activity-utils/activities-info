@@ -1341,16 +1341,16 @@ _current_focus_json_get() {
   _current_focus_encode_opts+=(
     --arg
       "object-id"
-        "${_focus_window_id}"
+        "${_window_focus_id}"
     --arg
       "object-type"
-        "${_focus_window_type}"
+        "${_window_focus_type}"
     --arg
       "android-user"
-        "${_focus_window_user}"
+        "${_window_focus_user}"
     --arg
       "activity"
-        "${_focus_window_activity}"
+        "${_window_focus_activity}"
   )
   _current_focus_json="$(
     jq \
