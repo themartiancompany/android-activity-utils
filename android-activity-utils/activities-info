@@ -1364,18 +1364,27 @@ _current_focus_json_get() {
           "${_window_focus_user}"
     )
   fi
-  _current_focus_json="$(
-    jq \
-      "${_jq_opts[@]}" \
-      "${_current_focus_encode_opts[@]}")"
-  _msg=(
-    "Generated current focus JSON:"
-  )
-  _msg_info \
-    "${_msg[*]}"
-  if [[ "${quiet}" == "n" ]]; then
-    echo \
-      "${_current_focus_json}"
+  if [[ "${_current_focus_encode_opts[*]}" != "" ]]; then
+    _msg=(
+      "Running jq with options"
+      "'${_jq_opts[*]}"
+      "${_current_focus_encode_opts[*]}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _current_focus_json="$(
+      jq \
+        "${_jq_opts[@]}" \
+        "${_current_focus_encode_opts[@]}")"
+    _msg=(
+      "Generated current focus JSON:"
+    )
+    _msg_info \
+      "${_msg[*]}"
+    if [[ "${quiet}" == "n" ]]; then
+      echo \
+        "${_current_focus_json}"
+    fi
   fi
 }
 
