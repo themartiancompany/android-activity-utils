@@ -1302,17 +1302,15 @@ _sub_hist_item_description_line_parse() {
 _current_focus_line_parse() {
   for _word in "${_line[@]}"; do
     if [[ "${_word}" == "mCurrentFocus="* ]]; then
-      if [[ "${_word}" != "mCurrentFocus="* ]]; then
-        _window_focus_type="${_word#mCurrentFocus=}"
-        _window_focus_type="${_window_focus_type%\{*}"
-        _window_focus_id="${_word#mCurrentFocus=${_window_focus_type}\{}"
-        _msg=(
-          "Current focus window type"
-          "'${_window_focus_type}'."
-        )
-        _msg_info \
-          "${_msg[*]}"
-      fi
+      _window_focus_type="${_word#mCurrentFocus=}"
+      _window_focus_type="${_window_focus_type%\{*}"
+      _window_focus_id="${_word#mCurrentFocus=${_window_focus_type}\{}"
+      _msg=(
+        "Current focus window type"
+        "'${_window_focus_type}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
     elif [[ ${_word#u} =~ $_is_number ]]; then
       _window_focus_user="${_word}"
     elif [[ ${_word} != "${_word%\}}" ]]; then
