@@ -61,6 +61,7 @@ _global_variables() {
   get_mode=""
   strict_mode=""
   silent_mode=""
+  output_fields=()
   color=""
   quiet=""
 }
@@ -70,10 +71,14 @@ _root_get() {
     _output_format="${1}" \
     _strict_mode="${2}" \
     _silent_mode="${3}" \
+    _output_fields=() \
     _dumpsys \
     _cmd \
     _msg=() \
     _sdk
+  _output_fields+=(
+    "$@"
+  )
   _sdk="$(
     sdk-version)"
   _msg=(
@@ -1633,11 +1638,16 @@ _activities_info() {
     _get_mode="${1}" \
     _output_format="${2}" \
     _strict_mode="${3}" \
-    _silent_mode="${4}"
+    _silent_mode="${4}" \
+    _output_fields=() 
+  _output_fields+=(
+    "$@"
+  )
   "_${_get_mode}_get" \
     "${_output_format}" \
     "${_strict_mode}" \
-    "${_silent_mode}"
+    "${_silent_mode}" \
+    "${_output_fields[@]}"
 }
 
 _auto_detect_mode() {
@@ -1667,6 +1677,14 @@ _auto_detect_mode() {
     _msg_error \
       "${_msg[*]}" \
       1
+  fi
+}
+
+_output_fields_auto_detect() {
+  if [[ "${output_fields[*]}" == "" ]]; then
+    output_fields+=(
+      "all"
+    )
   fi
 }
 
@@ -1701,6 +1719,7 @@ _set_overrides() {
     "silent" \
     "mode" \
     "n"
+  _output_fields_auto_detect
 }
 
 # Shows configuration options.
@@ -1710,6 +1729,7 @@ _show_config() {
   _msg_info "                Info mode:   ${get_mode}"
   _msg_info "            Output format:   ${output_format}"
   _msg_info "              Strict mode:   ${strict_mode}"
+  _msg_info "            Output fields:   ${output_fields[*]}"
 }
 
 # Show help usage, with an exit status.
@@ -1740,6 +1760,8 @@ Usage:
      -o <format>    Output format.
                     It can be 'json' or 'plain'.
                     Default: ${output_format}
+     -f <field>     Manually select an output field.
+                    Default: ${output_fields[*]}
      -s             Strict mode. If enabled
                     will stop if finds
                     an unknown field.
@@ -1772,7 +1794,7 @@ _global_variables
 # shellcheck disable=SC2034
 while \
   getopts \
-    'm:o:sqcvh?' \
+    'm:o:sqf:cvh?' \
     arg; do
   case \
     "${arg}" in
