@@ -445,6 +445,20 @@ _hist_json_get() {
             "${_hist_object_id}"
       )
     fi
+    if [[ "${_hist_object_user}" != "" ]]; then
+      _hist_encode_opts+=(
+        --arg
+          "user"
+            "${_hist_object_user}"
+      )
+    fi
+    if [[ "${_hist_object_activity}" != "" ]]; then
+      _hist_encode_opts+=(
+        --arg
+          "activity"
+            "${_hist_object_activity}"
+      )
+    fi
     if [[ "${_task_package_name}" != "" ]]; then
       _hist_encode_opts+=(
         --arg
@@ -931,6 +945,9 @@ _hist_line_parse() {
   _task_description_label=""
   _hist_object_id="${_line[3]}"
   _hist_object_id="${_hist_object_id#ActivityRecord\{}"
+  _hist_object_user="${_line[4]}"
+  _hist_object_activity="${_line[5]}"
+  _hist_object_activity="${_hist_object_actiivity%\}}"
   # _line=(
   #   "${_line[@]:3}"
   # )
