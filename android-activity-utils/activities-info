@@ -781,6 +781,556 @@ _insets_parse() {
   fi
 }
 
+_task_line_parse() {
+  _task_opened="true"
+  _index_display="$((
+    _index + 1))"
+  _msg=(
+    "Parsing task '${_index_display}' line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if (( -1 < "${_index}" )); then
+    _hist_json_get
+    _sub_hist_json_get
+    _sub_activity_json_get
+    _activity_json_get
+  fi
+  _hist_json=""
+  _hist=()
+  _hist_index=""
+  _sub_activities=()
+  _sub_activity_json=""
+  _sub_hist=()
+  _sub_hist_index=""
+  _sub_task_created_by_organizer=""
+  _sub_task_description_label=""
+  _sub_task_id=""
+  _sub_task_object_id=""
+  _sub_task_opened="false"
+  _sub_task_package_name=""
+  _sub_task_primary_color=""
+  _sub_task_process_name=""
+  _sub_task_type=""
+  _task_created_by_organizer=""
+  _task_description_label=""
+  _task_package_name=""
+  _task_visible=""
+  _index="$((
+    _index + 1 ))"
+  _sub_task_index=-1
+  _task_string="${_line_string#  \* Task\{}"
+  _task_string="${_task_string%\}}"
+  _line=(
+    ${_task_string}
+  )
+  _task_object_id="${_line[0]}"
+  _msg=(
+    "Got task object id '${_task_object_id}'"
+    "for task '${_index}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _task_id="${_line[1]#\#}"
+  for _word in "${_line[@]:2}"; do
+    if [[ "${_word}" == "type="* ]]; then
+      _task_type="${_word#type=}"
+    elif [[ "${_word}" == "visible="* ]]; then
+      _task_visible="${_word#visible=}"
+    else
+      _msg=(
+        "Unknown param '${_word}'"
+        "for Task object."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+  _values_clean
+}
+
+_sub_task_line_parse() {
+  _sub_hist_json_get
+  # _sub_hist_index=-1
+  _sub_task_index="$((
+    _sub_task_index + 1 ))"
+  _sub_task_string="${_line_string#    \* Task\{}"
+  _sub_task_string="${_sub_task_string%\}}"
+  _line=(
+    ${_sub_task_string}
+  )
+  _sub_task_opened="true"
+  _msg=(
+    "Parsing sub-task line for task '${_sub_task_index}'."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  if [[ "${quiet}" == "n" ]]; then
+    echo \
+      "${_line_string}"
+  fi
+  _sub_task_object_id="${_line[0]}"
+  _sub_task_id="${_line[1]#\#}"
+  for _word in "${_line[@]:2}"; do
+    if [[ "${_word}" == "type="* ]]; then
+      _sub_task_type="${_word#type=}"
+    elif [[ "${_word}" == "visible="* ]]; then
+      _sub_task_visible="${_word#visible=}"
+    else
+      _msg=(
+        "Unknown param '${_word}'"
+        "for sub-task object."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_hist_line_parse() {
+  _msg=(
+    "Parsing task history line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _hist_opened="true"
+  _hist_index_word="${_line[2]}"
+  _msg_info \
+    "${_line_string}"
+  _hist_index_new="${_hist_index_word#$'#'}"
+  _hist_index_new="${_hist_index_new%:}"
+  if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
+    _msg=(
+      "Old index '${_hist_index}'"
+      "new index '${_hist_index_new}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _hist_json_get \
+      "${_hist_index}"
+    _hist_index="${_hist_index_new}"
+  fi
+  _task_description_label=""
+  _hist_object_id="${_line[3]}"
+  _hist_object_id="${_hist_object_id#ActivityRecord\{}"
+}
+
+_task_created_by_organizer_line_parse() {
+  _msg=(
+    "Checking if task is created by organizer line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
+      _task_created_by_organizer="${_word#mCreatedByOrganizer=}"
+      _msg=(
+        "Got task created by organizer"
+        "'${_task_created_by_organizer}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    else
+      _msg=(
+        "Unknown parameter '${_word}'"
+        "for package name line."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_sub_task_created_by_organizer_line_parse() {
+  _msg=(
+    "Checking if sub-task is created by organizer line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
+      _sub_task_created_by_organizer="${_word#mCreatedByOrganizer=}"
+      _msg=(
+        "Got sub-task created by organizer"
+        "'${_sub_task_created_by_organizer}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    else
+      _msg=(
+        "Unknown parameter '${_word}'"
+        "for package name line."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_package_process_line_parse() {
+  _msg=(
+    "Parsing activity history item package"
+    "and process names."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "packageName="* ]]; then
+      _task_package_name="${_word#packageName=}"
+      _msg=(
+        "Got task package name"
+        "'${_task_package_name}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_word}" == "processName="* ]]; then
+      _task_process_name="${_word#processName=}"
+    else
+      _msg=(
+        "Unknown parameter '${_word}'"
+        "for package name line."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_sub_hist_line_parse() {
+  _msg=(
+    "Parsing sub-task history line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _sub_hist_opened="true"
+  _sub_hist_index_word="${_line[2]}"
+  _sub_hist_index_new="${_sub_hist_index_word#$'#'}"
+  _sub_hist_index_new="${_sub_hist_index_new%:}"
+  if [[ "${_sub_hist_index}" != "${_sub_hist_index_new}" ]]; then
+    _msg=(
+      "Old sub-task history item index '${_sub_hist_index}'."
+      "New sub-task history item index '${_sub_hist_index_new}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+    _sub_hist_json_get
+    #   "${_hist_index}"
+    _sub_hist_index="${_sub_hist_index_new}"
+  fi
+  _sub_task_description_label=""
+  _sub_task_icon=""
+  _sub_task_icon_resource=""
+  _sub_task_icon_filename=""
+  _sub_task_primary_color=""
+}
+
+_hist_item_package_process_line_parse() {
+  _msg=(
+    "Parsing task activity history item package name."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "packageName="* ]]; then
+      _task_package_name="${_word#packageName=}"
+      _msg=(
+        "Got task package name"
+        "'${_task_package_name}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_word}" == "processName="* ]]; then
+      _task_process_name="${_word#processName=}"
+    else
+      _msg=(
+        "Unknown parameter '${_word}'"
+        "for package name line."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_sub_hist_item_package_process_line_parse() {
+  _msg=(
+    "Parsing sub-task history item package name."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "packageName="* ]]; then
+      _sub_task_package_name="${_word#packageName=}"
+      _msg=(
+        "Got sub-task package name"
+        "'${_sub_task_package_name}'."
+      )
+      _msg_info \
+        "${_msg[*]}"
+    elif [[ "${_word}" == "processName="* ]]; then
+      _sub_task_process_name="${_word#processName=}"
+    else
+      _msg=(
+        "Unknown parameter '${_word}'"
+        "for package name line."
+      )
+      if [[ "${_silent_mode}" == "y" ]]; then
+        true
+      elif [[ "${_strict_mode}" == "y" ]]; then
+        _msg_error \
+          "${_msg[*]}" \
+          1
+      elif [[ "${_strict_mode}" == "n" ]]; then
+        _msg_warning \
+          "${_msg[*]}"
+      fi
+    fi
+  done
+}
+
+_hist_item_description_line_parse() {
+  _msg=(
+    "Parsing history item task description label line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _msg_info \
+    "${_line_string}"
+  if [[ "${_hist_opened}" == "false" ]]; then
+    _msg=(
+      "How is history item field '${_hist_opened}' not opened?"
+    )
+    _msg_info \
+      "${_msg_info[*]}"
+  elif [[ "${_hist_opened}" == "true" ]]; then
+    for _word in "${_line[@]:1}"; do
+      if [[ "${_word}" == "label="* ]]; then
+        _task_description_label="${_line_string#      taskDescription: label=\"}"
+        if [[ "${_task_description_label}" == *"\"" ]]; then
+          _task_description_label="${_task_description_label%\"}"
+        else
+          _task_description_label="${_task_description_label%\" icon=*}"
+        fi
+        _msg=(
+          "Got task description label"
+          "'${_task_description_label}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+        break
+      fi
+    done
+    _line_string="${_line_string#      taskDescription: label=\"${_task_description_label}\" }"
+    _line=(
+      ${_line_string}
+    )
+    for _word in "${_line[@]}"; do
+      # echo \
+      #   "${_word}"
+      if [[ "${_word}" == "icon="* ]]; then
+        _task_icon="${_word#icon=}"
+        _msg=(
+          "Got sub-task icon"
+          "'${_task_icon}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+      elif [[ "${_word}" == "iconResource="* ]]; then
+        _task_icon_resource="${_word#iconResource=}"
+      elif [[ "${_word}" == "iconFilename="* ]]; then
+        _task_icon_filename="${_word#iconFilename=}"
+      elif [[ "${_word}" == "primaryColor="* ]]; then
+        _task_primary_color="${_word#primaryColor=}"
+      else
+        _msg=(
+          "Unknown parameter '${_word}'"
+          "for task history item object."
+        )
+        if [[ "${_silent_mode}" == "y" ]]; then
+          true
+        elif [[ "${_strict_mode}" == "y" ]]; then
+          _msg_error \
+            "${_msg[*]}" \
+            1
+        elif [[ "${_strict_mode}" == "n" ]]; then
+          _msg_warning \
+            "${_msg[*]}"
+        fi
+      fi
+    done
+  else
+    _msg=(
+      "The value of '_hist_opened'"
+      "is '${_hist_opened}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
+_sub_hist_item_description_line_parse() {
+  _msg=(
+    "Parsing sub-task history"
+    "item description label line."
+  )
+  _msg_info \
+    "${_msg[*]}"
+  _msg_info \
+    "Line: '${_line_string}'."
+  if [[ "${_sub_hist_opened}" == "false" ]]; then
+    _msg=(
+      "How is sub-task history item"
+      "field '${_sub_hist_opened}' not opened?"
+    )
+    _msg_info \
+      "${_msg_info[*]}"
+  _description_word_index=1
+  elif [[ "${_sub_hist_opened}" == "true" ]]; then
+    for _word in "${_line[@]:1}"; do
+      if [[ "${_word}" == "label="* ]]; then
+        _sub_task_description_label="${_line_string#        taskDescription: label=\"}"
+        if [[ "${_sub_task_description_label}" == *"\"" ]]; then
+          _sub_task_description_label="${_sub_task_description_label%\"}"
+        else
+          _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
+        fi
+        _msg=(
+          "Got sub-task description label"
+          "'${_sub_task_description_label}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+        break
+      fi
+    done
+    _line_string="${_line_string#        taskDescription: label=\"${_sub_task_description_label}\" }"
+    _line=(
+      ${_line_string}
+    )
+    for _word in "${_line[@]}"; do
+      # echo \
+      #   "${_word}"
+      if [[ "${_word}" == "icon="* ]]; then
+        _sub_task_icon="${_word#icon=}"
+        _msg=(
+          "Got sub-task icon"
+          "'${_sub_task_icon}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+      elif [[ "${_word}" == "iconResource="* ]]; then
+        _sub_task_icon_resource="${_word#iconResource=}"
+      elif [[ "${_word}" == "iconFilename="* ]]; then
+        _sub_task_icon_filename="${_word#iconFilename=}"
+      elif [[ "${_word}" == "primaryColor="* ]]; then
+        _sub_task_primary_color="${_word#primaryColor=}"
+      else
+        _msg=(
+          "Unknown parameter '${_word}'"
+          "for task history item object."
+        )
+        if [[ "${_silent_mode}" == "y" ]]; then
+          true
+        elif [[ "${_strict_mode}" == "y" ]]; then
+          _msg_error \
+            "${_msg[*]}" \
+            1
+        elif [[ "${_strict_mode}" == "n" ]]; then
+          _msg_warning \
+            "${_msg[*]}"
+        fi
+      fi
+    done
+  else
+    _msg=(
+      "The value of '_sub_hist_opened'"
+      "is '${_sub_hist_opened}'."
+    )
+    _msg_info \
+      "${_msg[*]}"
+  fi
+}
+
+_current_focus_line_parse() {
+  for _word in "${_line[@]}"; do
+    if [[ "${_word}" == "mCurrentFocus="* ]]; then
+      if [[ "${_word}" != "mCurrentFocus="* ]]; then
+        _window_focus_type="${_word#mCurrentFocus=}"
+        _window_focus_type="${_window_focus_type%\{*}"
+        _window_focus_id="${_word#mCurrentFocus=${_window_focus_type}\{}"
+        _msg=(
+          "Current focus window type"
+          "'${_window_focus_type}'."
+        )
+        _msg_info \
+          "${_msg[*]}"
+      fi
+    else
+      _msg=(
+        "Unknown property '${_word}'"
+        "for 'WindowToken' object."
+        "Line:"
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        0
+      echo \
+        "${_line_string}" \
+        1>&2
+      exit \
+        1
+    fi
+  done
+}
+
 # NOTE:
 #   Parsing of the fields
 #   using '*_word' variables
@@ -864,6 +1414,8 @@ _dumpsys_json_encode() {
     _task_type \
     _task_string \
     _task_visible \
+    _window_focus_id \
+    _window_focus_type \
     _msg=() \
     _word \
     _word_index \
@@ -920,501 +1472,29 @@ _dumpsys_json_encode() {
       _display="${_line[1]#\#}"
       true
     elif [[ "${_line_string}" == "  * Task{"* ]]; then
-      _task_opened="true"
-      _index_display="$((
-        _index + 1))"
-      _msg=(
-        "Parsing task '${_index_display}' line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      if (( -1 < "${_index}" )); then
-        _hist_json_get
-        _sub_hist_json_get
-        _sub_activity_json_get
-        _activity_json_get
-      fi
-      _hist_json=""
-      _hist=()
-      _hist_index=""
-      _sub_activities=()
-      _sub_activity_json=""
-      _sub_hist=()
-      _sub_hist_index=""
-      _sub_task_created_by_organizer=""
-      _sub_task_description_label=""
-      _sub_task_id=""
-      _sub_task_object_id=""
-      _sub_task_opened="false"
-      _sub_task_package_name=""
-      _sub_task_primary_color=""
-      _sub_task_process_name=""
-      _sub_task_type=""
-      _task_created_by_organizer=""
-      _task_description_label=""
-      _task_package_name=""
-      _task_visible=""
-      _index="$((
-        _index + 1 ))"
-      _sub_task_index=-1
-      _task_string="${_line_string#  \* Task\{}"
-      _task_string="${_task_string%\}}"
-      _line=(
-        ${_task_string}
-      )
-      _task_object_id="${_line[0]}"
-      _msg=(
-        "Got task object id '${_task_object_id}'"
-        "for task '${_index}'."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _task_id="${_line[1]#\#}"
-      for _word in "${_line[@]:2}"; do
-        if [[ "${_word}" == "type="* ]]; then
-          _task_type="${_word#type=}"
-        elif [[ "${_word}" == "visible="* ]]; then
-          _task_visible="${_word#visible=}"
-        else
-          _msg=(
-            "Unknown param '${_word}'"
-            "for Task object."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
-      _values_clean
+      _task_line_parse
     elif [[ "${_line_string}" == "    * Task{"* ]]; then
-      _sub_hist_json_get
-      # _sub_hist_index=-1
-      _sub_task_index="$((
-        _sub_task_index + 1 ))"
-      _sub_task_string="${_line_string#    \* Task\{}"
-      _sub_task_string="${_sub_task_string%\}}"
-      _line=(
-        ${_sub_task_string}
-      )
-      _sub_task_opened="true"
-      _msg=(
-        "Parsing sub-task line for task '${_sub_task_index}'."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      if [[ "${quiet}" == "n" ]]; then
-        echo \
-          "${_line_string}"
-      fi
-      _sub_task_object_id="${_line[0]}"
-      _sub_task_id="${_line[1]#\#}"
-      for _word in "${_line[@]:2}"; do
-        if [[ "${_word}" == "type="* ]]; then
-          _sub_task_type="${_word#type=}"
-        elif [[ "${_word}" == "visible="* ]]; then
-          _sub_task_visible="${_word#visible=}"
-        else
-          _msg=(
-            "Unknown param '${_word}'"
-            "for sub-task object."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _sub_task_line_parse
     elif [[ "${_line_string}" == "    * Hist "* ]]; then
-      _msg=(
-        "Parsing task history line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _hist_opened="true"
-      _hist_index_word="${_line[2]}"
-      _msg_info \
-        "${_line_string}"
-      _hist_index_new="${_hist_index_word#$'#'}"
-      _hist_index_new="${_hist_index_new%:}"
-      if [[ "${_hist_index}" != "${_hist_index_new}" ]]; then
-        _msg=(
-          "Old index '${_hist_index}'"
-          "new index '${_hist_index_new}'."
-        )
-        _msg_info \
-          "${_msg[*]}"
-        _hist_json_get \
-          "${_hist_index}"
-        _hist_index="${_hist_index_new}"
-      fi
-      _task_description_label=""
-      _hist_object_id="${_line[3]}"
-      _hist_object_id="${_hist_object_id#ActivityRecord\{}"
+      _hist_line_parse
     elif [[ "${_line_string}" == "    mCreatedByOrganizer="* ]]; then
-      _msg=(
-        "Checking if task is created by organizer line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      for _word in "${_line[@]}"; do
-        if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
-          _task_created_by_organizer="${_word#mCreatedByOrganizer=}"
-          _msg=(
-            "Got task created by organizer"
-            "'${_task_created_by_organizer}'."
-          )
-          _msg_info \
-            "${_msg[*]}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for package name line."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _task_created_by_organizer_line_parse
     elif [[ "${_line_string}" == "      mCreatedByOrganizer="* ]]; then
-      _msg=(
-        "Checking if sub-task is created by organizer line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      for _word in "${_line[@]}"; do
-        if [[ "${_word}" == "mCreatedByOrganizer="* ]]; then
-          _sub_task_created_by_organizer="${_word#mCreatedByOrganizer=}"
-          _msg=(
-            "Got sub-task created by organizer"
-            "'${_sub_task_created_by_organizer}'."
-          )
-          _msg_info \
-            "${_msg[*]}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for package name line."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _sub_task_created_by_organizer_line_parse
     elif [[ "${_line_string}" == "    packageName="* ]]; then
-      _msg=(
-        "Parsing activity history item package name."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      for _word in "${_line[@]}"; do
-        if [[ "${_word}" == "packageName="* ]]; then
-          _task_package_name="${_word#packageName=}"
-          _msg=(
-            "Got task package name"
-            "'${_task_package_name}'."
-          )
-          _msg_info \
-            "${_msg[*]}"
-        elif [[ "${_word}" == "processName="* ]]; then
-          _task_process_name="${_word#processName=}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for package name line."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _package_process_line_parse
     elif [[ "${_line_string}" == "      * Hist "* ]]; then
-      _msg=(
-        "Parsing sub-task history line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _sub_hist_opened="true"
-      _sub_hist_index_word="${_line[2]}"
-      _sub_hist_index_new="${_sub_hist_index_word#$'#'}"
-      _sub_hist_index_new="${_sub_hist_index_new%:}"
-      if [[ "${_sub_hist_index}" != "${_sub_hist_index_new}" ]]; then
-        _msg=(
-          "Old sub-task history item index '${_sub_hist_index}'."
-          "New sub-task history item index '${_sub_hist_index_new}'."
-        )
-        _msg_info \
-          "${_msg[*]}"
-        _sub_hist_json_get
-        #   "${_hist_index}"
-        _sub_hist_index="${_sub_hist_index_new}"
-      fi
-      _sub_task_description_label=""
-      _sub_task_icon=""
-      _sub_task_icon_resource=""
-      _sub_task_icon_filename=""
-      _sub_task_primary_color=""
-    # '    * Hist'
-    #   * Task{1ad9a3a #4106 type=standard A=10182:com.b44t.messenger U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=2}
-    #        packageName=com.android.gallery3d processName=com.android.gallery3d'.
+      _sub_hist_line_parse
     elif [[ "${_line_string}" == "      packageName="* ]]; then
-      _msg=(
-        "Parsing task activity history item package name."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      for _word in "${_line[@]}"; do
-        if [[ "${_word}" == "packageName="* ]]; then
-          _task_package_name="${_word#packageName=}"
-          _msg=(
-            "Got task package name"
-            "'${_task_package_name}'."
-          )
-          _msg_info \
-            "${_msg[*]}"
-        elif [[ "${_word}" == "processName="* ]]; then
-          _task_process_name="${_word#processName=}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for package name line."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _hist_item_package_process_line_parse
     elif [[ "${_line_string}" == "        packageName="* ]]; then
-      _msg=(
-        "Parsing sub-task history item package name."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      for _word in "${_line[@]}"; do
-        if [[ "${_word}" == "packageName="* ]]; then
-          _sub_task_package_name="${_word#packageName=}"
-          _msg=(
-            "Got sub-task package name"
-            "'${_sub_task_package_name}'."
-          )
-          _msg_info \
-            "${_msg[*]}"
-        elif [[ "${_word}" == "processName="* ]]; then
-          _sub_task_process_name="${_word#processName=}"
-        else
-          _msg=(
-            "Unknown parameter '${_word}'"
-            "for package name line."
-          )
-          if [[ "${_silent_mode}" == "y" ]]; then
-            true
-          elif [[ "${_strict_mode}" == "y" ]]; then
-            _msg_error \
-              "${_msg[*]}" \
-              1
-          elif [[ "${_strict_mode}" == "n" ]]; then
-            _msg_warning \
-              "${_msg[*]}"
-          fi
-        fi
-      done
+      _sub_hist_item_package_process_line_parse
     elif [[ "${_line_string}" == "      taskDescription: "* ]]; then
-      _msg=(
-        "Parsing history item task description label line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _msg_info \
-        "${_line_string}"
-      if [[ "${_hist_opened}" == "false" ]]; then
-        _msg=(
-          "How is history item field '${_hist_opened}' not opened?"
-        )
-        _msg_info \
-          "${_msg_info[*]}"
-      elif [[ "${_hist_opened}" == "true" ]]; then
-        for _word in "${_line[@]:1}"; do
-          if [[ "${_word}" == "label="* ]]; then
-            _task_description_label="${_line_string#      taskDescription: label=\"}"
-            if [[ "${_task_description_label}" == *"\"" ]]; then
-              _task_description_label="${_task_description_label%\"}"
-            else
-              _task_description_label="${_task_description_label%\" icon=*}"
-            fi
-            _msg=(
-              "Got task description label"
-              "'${_task_description_label}'."
-            )
-            _msg_info \
-              "${_msg[*]}"
-            break
-          fi
-        done
-        _line_string="${_line_string#      taskDescription: label=\"${_task_description_label}\" }"
-        _line=(
-          ${_line_string}
-        )
-        for _word in "${_line[@]}"; do
-          # echo \
-          #   "${_word}"
-          if [[ "${_word}" == "icon="* ]]; then
-            _task_icon="${_word#icon=}"
-            _msg=(
-              "Got sub-task icon"
-              "'${_task_icon}'."
-            )
-            _msg_info \
-              "${_msg[*]}"
-          elif [[ "${_word}" == "iconResource="* ]]; then
-            _task_icon_resource="${_word#iconResource=}"
-          elif [[ "${_word}" == "iconFilename="* ]]; then
-            _task_icon_filename="${_word#iconFilename=}"
-          elif [[ "${_word}" == "primaryColor="* ]]; then
-            _task_primary_color="${_word#primaryColor=}"
-          else
-            _msg=(
-              "Unknown parameter '${_word}'"
-              "for task history item object."
-            )
-            if [[ "${_silent_mode}" == "y" ]]; then
-              true
-            elif [[ "${_strict_mode}" == "y" ]]; then
-              _msg_error \
-                "${_msg[*]}" \
-                1
-            elif [[ "${_strict_mode}" == "n" ]]; then
-              _msg_warning \
-                "${_msg[*]}"
-            fi
-          fi
-        done
-      else
-        _msg=(
-          "The value of '_hist_opened'"
-          "is '${_hist_opened}'."
-        )
-        _msg_info \
-          "${_msg[*]}"
-      fi
+      _hist_item_description_line_parse
     elif [[ "${_line_string}" == "        taskDescription: "* ]]; then
-      _msg=(
-        "Parsing sub-task history item description label line."
-      )
-      _msg_info \
-        "${_msg[*]}"
-      _msg_info \
-        "Line: '${_line_string}'."
-      if [[ "${_sub_hist_opened}" == "false" ]]; then
-        _msg=(
-          "How is sub-task history item field '${_sub_hist_opened}' not opened?"
-        )
-        _msg_info \
-          "${_msg_info[*]}"
-      _description_word_index=1
-      elif [[ "${_sub_hist_opened}" == "true" ]]; then
-        for _word in "${_line[@]:1}"; do
-          if [[ "${_word}" == "label="* ]]; then
-            _sub_task_description_label="${_line_string#        taskDescription: label=\"}"
-            if [[ "${_sub_task_description_label}" == *"\"" ]]; then
-              _sub_task_description_label="${_sub_task_description_label%\"}"
-            else
-              _sub_task_description_label="${_sub_task_description_label%\" icon=*}"
-            fi
-            _msg=(
-              "Got sub-task description label"
-              "'${_sub_task_description_label}'."
-            )
-            _msg_info \
-              "${_msg[*]}"
-            break
-          fi
-        done
-        _line_string="${_line_string#        taskDescription: label=\"${_sub_task_description_label}\" }"
-        _line=(
-          ${_line_string}
-        )
-        for _word in "${_line[@]}"; do
-          # echo \
-          #   "${_word}"
-          if [[ "${_word}" == "icon="* ]]; then
-            _sub_task_icon="${_word#icon=}"
-            _msg=(
-              "Got sub-task icon"
-              "'${_sub_task_icon}'."
-            )
-            _msg_info \
-              "${_msg[*]}"
-          elif [[ "${_word}" == "iconResource="* ]]; then
-            _sub_task_icon_resource="${_word#iconResource=}"
-          elif [[ "${_word}" == "iconFilename="* ]]; then
-            _sub_task_icon_filename="${_word#iconFilename=}"
-          elif [[ "${_word}" == "primaryColor="* ]]; then
-            _sub_task_primary_color="${_word#primaryColor=}"
-          else
-            _msg=(
-              "Unknown parameter '${_word}'"
-              "for task history item object."
-            )
-            if [[ "${_silent_mode}" == "y" ]]; then
-              true
-            elif [[ "${_strict_mode}" == "y" ]]; then
-              _msg_error \
-                "${_msg[*]}" \
-                1
-            elif [[ "${_strict_mode}" == "n" ]]; then
-              _msg_warning \
-                "${_msg[*]}"
-            fi
-          fi
-        done
-      else
-        _msg=(
-          "The value of '_sub_hist_opened'"
-          "is '${_sub_hist_opened}'."
-        )
-        _msg_info \
-          "${_msg[*]}"
-      fi
+      _sub_hist_item_description_line_parse
+    elif [[ "${_line_string}" == "  mCurrentFocus="* ]]; then
+      _current_focus_line_parse
     else
       _msg=(
         "Activity '${_index}',"
@@ -1457,6 +1537,12 @@ _dumpsys_json_encode() {
       "activities"
         "${_activities_jq_arg}"
   )
+  _current_focus_json_get
+  _activities_encode_opts+=(
+    --argjson
+      "mCurrentFocus"
+        "${_current_focus_json}"
+  )
   _msg=(
     "Running jq with options"
     "'${_jq_opts}"
@@ -1467,7 +1553,7 @@ _dumpsys_json_encode() {
   jq \
     "${_jq_opts[@]}" \
     "${_activities_encode_opts[@]}" \
-    '$ARGS.named.activities'
+    '$ARGS.named'
 }
 
 _full_configuration_string_parse() {
