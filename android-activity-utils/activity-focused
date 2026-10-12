@@ -75,15 +75,18 @@ _display_output_plain() {
       _line+=(
         "${_activity}"
       )
-    elif [[ "${_field}" == "object-id" ]]; then
+    fi
+    if [[ "${_field}" == "object-id" ]]; then
       _line+=(
         "${_object_id}"
       )
-    elif [[ "${_field}" == "object-type" ]]; then
+    fi
+    if [[ "${_field}" == "object-type" ]]; then
       _line+=(
         "${_object_type}"
       )
-    elif [[ "${_field}" == "android-user" ]]; then
+    fi
+    if [[ "${_field}" == "android-user" ]]; then
       _line+=(
         "${_android_user}"
       )
@@ -95,27 +98,45 @@ _display_output_plain() {
 
 _display_output_json() {
   local \
-    _jq_opts=()
+    _jq_opts=() \
+    _activity_focused_encode_opts=()
+  _jq_opts+=(
+    -n
+  )
   for _field in "${_output_fields[@]}"; do
     if [[ "${_field}" == "activity" ]]; then
-      _line+=(
-        "${_activity}"
+      _activity_focused_encode_opts+=(
+        --arg
+          "activity"
+            "${_activity}"
       )
-    elif [[ "${_field}" == "object-id" ]]; then
-      _line+=(
-        "${_object_id}"
+    fi
+    if [[ "${_field}" == "object-id" ]]; then
+      _activity_focused_encode_opts+=(
+        --arg
+          "object-id"
+            "${_object_id}"
       )
-    elif [[ "${_field}" == "object-type" ]]; then
-      _line+=(
-        "${_object_type}"
+    fi
+    if [[ "${_field}" == "object-type" ]]; then
+      _activity_focused_encode_opts+=(
+        --arg
+          "object-type"
+            "${_object_type}"
       )
-    elif [[ "${_field}" == "android-user" ]]; then
-      _line+=(
-        "${_android_user}"
+    fi
+    if [[ "${_field}" == "android-user" ]]; then
+      _activity_focused_encode_opts+=(
+        --arg
+          "android-user"
+            "${_android_user}"
       )
     fi
   done
-
+  jq \
+    "${_jq_opts[@]}" \
+    "${_activity_focused_encode_opts[@]}" \
+    '$ARGS.named'
 }
 
 _root_get() {
