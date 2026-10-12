@@ -1416,6 +1416,7 @@ _current_focus_json_get() {
           " ${_output_fields[*]} " ==  *" mCurrentFocus "*  ]]; then
       _msg=(
         "Current focus JSON not generated."
+        "Window focus activity '${_window_focus_activity}'."
       )
       _msg_error \
         "${_msg[*]}" \
