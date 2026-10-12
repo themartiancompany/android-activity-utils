@@ -141,6 +141,30 @@ _auto_detect_mode() {
   fi
 }
 
+_output_fields_auto_detect() {
+  local \
+    _msg=()
+  if [[ "${output_fields[*]}" == "" ]]; then
+    if [[ "${output_format}" == "plain" ]]; then
+      _output_fields=(
+        "activity"
+      )
+    elif [[ "${output_format}" == "json" ]]; then
+      _output_fields=(
+        "all"
+      )
+    else
+      _msg=(
+        "Unknown output format"
+        "'${output_format}'."
+      )
+      _msg_error \
+        "${_msg[*]}" \
+        1
+    fi
+  fi
+}
+
 _set_overrides() {
   if [[ -v override_color ]]; then
     color="${override_color}"
@@ -160,7 +184,10 @@ _set_overrides() {
     "get" \
     "mode" \
     "$(_auto_detect_mode)"
-  _output_format_auto_detect
+  _set_override \
+    "output" \
+    "format" \
+    "plain"
   _output_fields_auto_detect
 }
 
@@ -200,7 +227,7 @@ Usage:
                           Default: ${get_mode}
      -o <output-format>   It can be 'plain' or 'json'.
                           Default: ${output_format}
-     -f <output-field>    It can be 'activity-name',
+     -f <output-field>    It can be 'activity',
                           'all', 'object-id',
                           'object-type' or 'android-user'.
                           Default: ${output_fields[*]}
