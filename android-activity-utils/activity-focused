@@ -47,9 +47,9 @@ _root_requirements() {
   _os="$(
     uname \
       -o)"
-  _check_cmd \
-    "awk" \
-    "gawk"
+  # _check_cmd \
+  #   "awk" \
+  #   "gawk"
   _check_cmd \
     "grep"
   if [[ "${_os}" == "Android" ]]; then
@@ -67,9 +67,73 @@ _global_variables() {
   quiet=""
 }
 
+_display_output_plain() {
+  local \
+    _line=()
+  for _field in "${_output_fields[@]}"; do
+    if [[ "${_field}" == "activity" ]]; then
+      _line+=(
+        "${_activity}"
+      )
+    elif [[ "${_field}" == "object-id" ]]; then
+      _line+=(
+        "${_object_id}"
+      )
+    elif [[ "${_field}" == "object-type" ]]; then
+      _line+=(
+        "${_object_type}"
+      )
+    elif [[ "${_field}" == "android-user" ]]; then
+      _line+=(
+        "${_android_user}"
+      )
+    fi
+  done
+  echo \
+    "${_line[*]}"
+}
+
+_display_output_json() {
+  local \
+    _jq_opts=()
+  for _field in "${_output_fields[@]}"; do
+    if [[ "${_field}" == "activity" ]]; then
+      _line+=(
+        "${_activity}"
+      )
+    elif [[ "${_field}" == "object-id" ]]; then
+      _line+=(
+        "${_object_id}"
+      )
+    elif [[ "${_field}" == "object-type" ]]; then
+      _line+=(
+        "${_object_type}"
+      )
+    elif [[ "${_field}" == "android-user" ]]; then
+      _line+=(
+        "${_android_user}"
+      )
+    fi
+  done
+
+}
+
 _root_get() {
   local \
+    _output_format="${1}" \
+    _output_fields=() \
+    _cmd=() \
+    _line=() \
+    _activity \
+    _android_user \
+    _object_id \
+    _object_type \
     _sdk
+  shift \
+    1
+  _output_fields+=(
+    "$@"
+  )
   _sdk="$(
     sdk-version)"
   if (( 32 < "${_sdk}" )); then
@@ -95,27 +159,58 @@ _root_get() {
     su \
       -c \
       "${_cmd[*]}")"
-  _activity="$(
+  _current_focus_line="$(
     echo \
       "${_activities}" |
       grep \
-        "mCurrentFocus" |
-        awk \
-          '{print $3}' |
-          awk \
-            -F \
-              '}' \
-            '{print $1}')"
-  echo \
-    "${_activity}"
+        "mCurrentFocus=")"
+  _line=(
+    ${_current_focus_line}
+  )
+  if [[ " ${_output_fields[*]} " == *" activity "* || \
+        "${_output_fields[*]}" == "all" ]]; then
+    _activity="${_line[2]}"
+    _activity="${_activity%\}}"
+    # _activity="$(
+    #   echo \
+    #     "${_current_focus_line}" |
+    #     awk \
+    #       '{print $3}' |
+    #       awk \
+    #         -F \
+    #           '}' \
+    #         '{print $1}')"
+  fi
+  if [[ " ${_output_fields[*]} " == *" object-id "* || 
+        " ${_output_fields[*]} " == *" object-type "* || \
+        "${_output_fields[*]}" == "all" ]]; then
+    _object_id="${_line[0]}"
+    _object_type="${_object_id#mCurrentFocus=}"
+    _object_type="${_object_type%\{}"
+    _object_id="${_object_id#mCurrentFocus=${_object_type}%}"
+  fi
+  if [[ " ${_output_fields[*]} " == *" android-user "* || \
+        "${_output_fields[*]}" == "all" ]]; then
+    _android_user="${_line[1]}"
+  fi
+  "_display_output_${_output_format}"
 }
 
 _activity_focused() {
   local \
     _mode="${1}" \
+    _output_format="${2}" \
+    _output_fields=() \
     _cmd=() \
     _activities
-  "_${_mode}_get"
+  shift \
+    2
+  _output_fields+=(
+    "$@"
+  )
+  "_${_mode}_get" \
+    "${_output_format}" \
+    "${_output_fields[@]}"
 }
 
 _auto_detect_mode() {
@@ -213,7 +308,7 @@ _usage() {
       _usage_text << \
         ENDUSAGETEXT || true
 
-Get currently focused Android activity.
+Get information about the currently focused Android activity.
 
 Usage:
 
@@ -222,19 +317,44 @@ Usage:
 
   options:
 
-     -m <method>          Method to obtain activity name.
-                          It can be 'root'.
-                          Default: ${get_mode}
-     -o <output-format>   It can be 'plain' or 'json'.
-                          Default: ${output_format}
-     -f <output-field>    It can be 'activity',
-                          'all', 'object-id',
-                          'object-type' or 'android-user'.
-                          Default: ${output_fields[*]}
+     -m <method>
 
-     -h                   This message.
-     -c                   Enable color output.
-     -v                   Enable verbose output
+       Method to obtain activity name.
+       It can be 'root'.
+       Default: ${get_mode}
+
+     -o <output-format>
+
+       It can be 'plain' or 'json'.
+       When selecting output format 'plain',
+       be aware available fields are different
+       from the ones available for the 'json'
+       output format.
+       Default: ${output_format}
+
+     -f <output-field>
+
+       For output format 'plain', it can be:
+       - activity,
+       - android-user,
+       - all,
+       - object-id,
+       - object-type.
+       For output format 'json' it can only
+       be 'all'.
+       Default: ${output_fields[*]}
+
+     -h
+
+       This message.
+
+     -c
+
+       Enable color output.
+
+     -v
+
+       Enable verbose output.
 
 ENDUSAGETEXT
   _printf \
@@ -286,11 +406,12 @@ while \
 done
 shift \
   $((
-    OPTIND - 1 \
-  ))
+    OPTIND - 1 ))
 _set_overrides
 app_opts=(
   "${get_mode}"
+  "${output_format}"
+  "${output_fields[@]}"
 )
 _show_config
 _activity_focused \
