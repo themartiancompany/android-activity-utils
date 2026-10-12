@@ -1300,6 +1300,11 @@ _sub_hist_item_description_line_parse() {
 }
 
 _current_focus_line_parse() {
+  _msg=(
+    "Parsing current focus line."
+  )
+  _msg_info \
+    "${_msg[*]}"
   for _word in "${_line[@]}"; do
     if [[ "${_word}" == "mCurrentFocus="* ]]; then
       _window_focus_type="${_word#mCurrentFocus=}"
@@ -1318,7 +1323,7 @@ _current_focus_line_parse() {
     else
       _msg=(
         "Unknown property '${_word}'"
-        "for 'WindowToken' object."
+        "for 'mCurrentFocus' object."
         "Line:"
       )
       _msg_error \
@@ -1335,7 +1340,14 @@ _current_focus_line_parse() {
 
 _current_focus_json_get() {
   local \
-    _current_focus_encode_opts=()
+    _current_focus_encode_opts=() \
+    _msg=()
+  _msg=(
+    "Generating JSON for"
+    "current focus activity."
+  )
+  _msg_info \
+    "${_msg[*]}"
   if [[ "${_window_focus_activity}" == "" ]]; then
     _current_focus_encode_opts+=(
       --arg
